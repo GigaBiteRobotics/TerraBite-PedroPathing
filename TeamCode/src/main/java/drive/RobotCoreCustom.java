@@ -26,7 +26,7 @@ public class RobotCoreCustom {
     // PID coefficients for motors
     public PIDFCoefficients pidfCoefficientsExt = new PIDFCoefficients(20, 1, 0.2, 0.3);
     public PIDFCoefficients pidfCoefficientsRot = new PIDFCoefficients(0, 0, 0, 0);
-    public CustomPIDFController extPIDFController = new CustomPIDFController(15, 5, 0, 0);
+    public CustomPIDFController extPIDFController = new CustomPIDFController(20, 8, 0, 0);
     public int extTicks = 0;
     public double targetExtPower;
 
@@ -131,8 +131,7 @@ public class RobotCoreCustom {
 
     /**
      * Checks if a path is finished based on the follower's current position.
-     * @param follower The path follower instance.
-     * @param pose The target pose.
+     * @param follower The path follower instance
      * @return True if the path is completed, otherwise false.
      */
     public boolean isPathFinished(Follower follower, Pose targetPose) {
