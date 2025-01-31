@@ -162,14 +162,6 @@ public class MainAutoLeftV1 extends OpMode {
 					follower.followPath(pc4, true);
 					elapsedTime.reset();
 				}
-				if (elapsedTime.milliseconds() > 1000 && armState == 1) {
-					armState = 0;
-					pathState = 5;
-					targetArmPos = armDownPos;
-					gripperRollerTracking = MainDriveOpmode.gripperRollerPos.STOPPED;
-					robotCoreCustom.gripperPitch.setPosition(0.15);
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
-				}
 				break;
 			case 5:
 				if (robotCoreCustom.isPathFinished(follower, pose4)) {

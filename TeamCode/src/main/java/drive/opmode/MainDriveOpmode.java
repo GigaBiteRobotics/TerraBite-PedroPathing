@@ -14,9 +14,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
-import drive.PersistentStorage;
 import drive.RobotCoreCustom;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -60,6 +58,8 @@ public class MainDriveOpmode extends OpMode{
         NA,
         VEL
     }
+    double rotationalExponentialOutput;
+    double rotationalSensitivity;
 
 
     // Gripper state tracking variables
@@ -171,7 +171,9 @@ public class MainDriveOpmode extends OpMode{
         }
 
         // Update robot systems
-        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, (-gamepad1.right_stick_x*0.46), true);
+        rotationalSensitivity = 1.5;  // Adjust this for desired sensitivity
+        rotationalExponentialOutput = Math.signum(-gamepad1.right_stick_x) * Math.pow(Math.abs(gamepad1.right_stick_x), rotationalSensitivity);
+        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, (rotationalExponentialOutput), true);
         follower.update();
         updateArmLimits();
         robotCoreCustom.updateAll();
