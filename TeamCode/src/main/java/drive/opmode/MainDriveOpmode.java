@@ -171,7 +171,7 @@ public class MainDriveOpmode extends OpMode{
         }
 
         // Update robot systems
-        rotationalSensitivity = 1.5;  // Adjust this for desired sensitivity
+        rotationalSensitivity = 0.5;  // Adjust this for desired sensitivity
         rotationalExponentialOutput = Math.signum(-gamepad1.right_stick_x) * Math.pow(Math.abs(gamepad1.right_stick_x), rotationalSensitivity);
         follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, (rotationalExponentialOutput), true);
         follower.update();
