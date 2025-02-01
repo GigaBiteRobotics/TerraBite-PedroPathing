@@ -59,56 +59,67 @@ public class MainAutoLeftV1 extends OpMode {
 		pc0 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(startPose), new Point(pose0)))
 				.setLinearHeadingInterpolation(startPose.getHeading(), pose0.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc1 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose0), new Point(pose1)))
 				.setLinearHeadingInterpolation(pose0.getHeading(), pose1.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc2 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose1), new Point(pose2)))
 				.setLinearHeadingInterpolation(pose1.getHeading(), pose2.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc3 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose2), new Point(pose3)))
 				.setLinearHeadingInterpolation(pose2.getHeading(), pose3.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc4 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose3), new Point(pose4)))
 				.setLinearHeadingInterpolation(pose3.getHeading(), pose4.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc5 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose4), new Point(pose5)))
 				.setLinearHeadingInterpolation(pose4.getHeading(), pose5.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc6 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose5), new Point(pose6)))
 				.setLinearHeadingInterpolation(pose5.getHeading(), pose6.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc7 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose6), new Point(pose7)))
 				.setLinearHeadingInterpolation(pose6.getHeading(), pose7.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc8 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose7), new Point(pose8)))
 				.setLinearHeadingInterpolation(pose7.getHeading(), pose8.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc9 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose8), new Point(pose9)))
 				.setLinearHeadingInterpolation(pose8.getHeading(), pose9.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 
 		pc10 = follower.pathBuilder()
 				.addPath(new BezierLine(new Point(pose9), new Point(pose10)))
 				.setLinearHeadingInterpolation(pose9.getHeading(), pose10.getHeading())
+				.setPathEndVelocityConstraint(5)
 				.build();
 	}
 	public void autoUpdate() {
@@ -121,14 +132,14 @@ public class MainAutoLeftV1 extends OpMode {
 				armState = 0;
 				break;
 			case 1:
-				if (robotCoreCustom.isPathFinished(follower, pose0) && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 540 && robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 2450 && armState == 0) {
+				if (robotCoreCustom.isPathFinished(follower, pose0) && robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 540 && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 2450 && armState == 0) {
 					robotCoreCustom.gripperPitch.setPosition(0.56);
 					armState = 1;
 					follower.followPath(pc1, true);
-					targetArmPos = armScorePos;
+					targetArmPos = armDownPos;
 					pathTimer.reset();
 				}
-				if (armState == 1  && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() < 2300 && robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 600) {
+				if (armState == 1) {
 					pathState = 2;
 					armState = 0;
 					targetArmPos = armDownPos;
@@ -151,6 +162,7 @@ public class MainAutoLeftV1 extends OpMode {
 					pathState = 4;
 					armState = 0;
 					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+					targetArmPos = armUpPos;
 				}
 				break;
 			case 4:

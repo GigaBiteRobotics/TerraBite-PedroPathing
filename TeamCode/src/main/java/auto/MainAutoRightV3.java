@@ -157,21 +157,21 @@ public class MainAutoRightV3 extends OpMode {
 			case 2:
 				if (robotCoreCustom.isPathFinished(follower, pose1)) {
 					targetArmPos = armDownPos;
-					follower.followPath(path2PC, false);
+					follower.followPath(path2PC, true);
 					pathState = 3;
 				}
 				break;
 
 			case 3:
 				if (robotCoreCustom.isPathFinished(follower, pose2)) {
-					follower.followPath(path3PC, false);
+					follower.followPath(path3PC, true);
 					pathState = 4;
 				}
 				break;
 
 			case 4:
 				if (robotCoreCustom.isPathFinished(follower, pose3)) {
-					follower.followPath(path4PC, false);
+					follower.followPath(path4PC, true);
 					pathState = 5;
 				}
 				break;

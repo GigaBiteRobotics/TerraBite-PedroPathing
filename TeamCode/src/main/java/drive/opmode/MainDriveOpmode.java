@@ -60,6 +60,7 @@ public class MainDriveOpmode extends OpMode{
     }
     double rotationalExponentialOutput;
     double rotationalSensitivity;
+    double rotationalForwardOffset;
 
 
     // Gripper state tracking variables
@@ -171,9 +172,10 @@ public class MainDriveOpmode extends OpMode{
         }
 
         // Update robot systems
-        rotationalSensitivity = 0.5;  // Adjust this for desired sensitivity
+        rotationalSensitivity = 2;  // Adjust this for desired sensitivity
         rotationalExponentialOutput = Math.signum(-gamepad1.right_stick_x) * Math.pow(Math.abs(gamepad1.right_stick_x), rotationalSensitivity);
-        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, (rotationalExponentialOutput), true);
+        rotationalForwardOffset = ((0 * 0));
+        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, (rotationalExponentialOutput + rotationalForwardOffset), true);
         follower.update();
         updateArmLimits();
         robotCoreCustom.updateAll();
@@ -190,6 +192,8 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("poseY", follower.getPose().getY());
         telemetryA.addData("poseHeading", follower.getPose().getHeading());
         telemetryA.addData("gripperPitch", robotCoreCustom.gripperPitch.getPosition());
+        telemetryA.addData("velocityX", follower.getVelocity().getXComponent());
+        telemetryA.addData("velocityY", follower.getVelocity().getYComponent());
         telemetryA.update();
     }
 
