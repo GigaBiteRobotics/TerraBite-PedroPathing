@@ -26,7 +26,7 @@ public class RobotCoreCustom {
     // PID coefficients for motors
     public PIDFCoefficients pidfCoefficientsExt = new PIDFCoefficients(20, 1, 0.2, 0.3);
     public PIDFCoefficients pidfCoefficientsRot = new PIDFCoefficients(0, 0, 0, 0);
-    public CustomPIDFController extPIDFController = new CustomPIDFController(20, 8, 0, 0);
+    public CustomPIDFController extPIDFController = new CustomPIDFController(24, 16, 0, 0);
     public int extTicks = 0;
     public double targetExtPower;
 
@@ -34,7 +34,7 @@ public class RobotCoreCustom {
     private final double rotHomingPower = -0.8;
     private final double extHomingPower = -1;
     // Servo components for the gripper
-    public Servo gripperRoller0, gripperRoller1, gripperPitch, gripper, sweeperServo;
+    public Servo gripperRotation0, gripperRotation1, gripperPitch, gripper, sweeperServo;
     // Enum for homing states
     public enum HomingState {
         IDLE,
@@ -66,8 +66,8 @@ public class RobotCoreCustom {
         // Initialize servos
         gripper = hardwareMap.get(Servo.class, "gripper");
         gripperPitch = hardwareMap.get(Servo.class, "gripperPitch");
-        gripperRoller0 = hardwareMap.get(Servo.class, "gripperRoller0");
-        gripperRoller1 = hardwareMap.get(Servo.class, "gripperRoller1");
+        gripperRotation0 = hardwareMap.get(Servo.class, "gripperRotation0");
+        gripperRotation1 = hardwareMap.get(Servo.class, "gripperRotation1");
         sweeperServo = hardwareMap.get(Servo.class, "sweeperServo");
     }
 
@@ -202,14 +202,9 @@ public class RobotCoreCustom {
      * @param speed The speed value (0 to 1) to control the intensity.
      * @param direction The direction (FORWARD or REVERSE).
      */
-    public void setGripperRollers(double speed, Direction direction) {
-        if (direction == Direction.REVERSE) {
-            gripperRoller1.setPosition(1 * speed);
-            gripperRoller0.setPosition(((speed)*-1)+1);
-        } else {
-            gripperRoller0.setPosition(1 * speed);
-            gripperRoller1.setPosition(((speed) * -1) + 1);
-        }
+    public void setGripperRotation(double pos) {
+        gripperRotation0.setPosition(1 * pos);
+        gripperRotation1.setPosition(1 * pos);
     }
 
     /**

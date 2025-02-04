@@ -44,7 +44,7 @@ public class MainAutoRightV3 extends OpMode {
 	private PathChain hangPreloadPC, pushSamplesPC, hang1PC, hang2PC, hang3PC, hang4PC, parkPC, path2PC, path3PC, path4PC, path5PC, path6PC, path7PC, path8PC, backPC;
 	private GoBildaPinpointDriver odo;
 	private final ElapsedTime pathTimer = new ElapsedTime();
-	MainDriveOpmode.gripperRollerPos gripperRollerTracking = MainDriveOpmode.gripperRollerPos.STOPPED;
+
 	MainDriveOpmode.gripperPos gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
 	MainDriveOpmode.gripperPitchPos gripperPitchTracking = MainDriveOpmode.gripperPitchPos.FORWARD;
 	ElapsedTime gripperTimer;
@@ -371,13 +371,6 @@ public class MainAutoRightV3 extends OpMode {
 	}
 	public void gripperChecking() {
 		// Update hardware states based on tracking
-		if (gripperTracking == MainDriveOpmode.gripperPos.CLOSE) {
-			gripperRollerTracking = MainDriveOpmode.gripperRollerPos.STOPPED;
-		}
-		robotCoreCustom.setGripperRollers(
-				(gripperRollerTracking == MainDriveOpmode.gripperRollerPos.STOPPED) ? 0.5 : 1,
-				(gripperRollerTracking == MainDriveOpmode.gripperRollerPos.REVERSE) ? RobotCoreCustom.Direction.REVERSE : RobotCoreCustom.Direction.FORWARD
-		);
 
         /*
         robotCoreCustom.setGripperPitch(
