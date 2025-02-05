@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import drive.RobotCoreCustom;
 import pedroPathing.constants.FConstants;
@@ -208,10 +209,12 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("poseX", follower.getPose().getX());
         telemetryA.addData("poseY", follower.getPose().getY());
         telemetryA.addData("poseHeading", follower.getPose().getHeading());
+
         telemetryA.addData("gripperPitch", robotCoreCustom.gripperPitch.getPosition());
         telemetryA.addData("gripper", robotCoreCustom.gripper.getPosition());
         telemetryA.addData("gripperRotation", gripperRotationPosTarget);
         telemetryA.addData("PIDPower", robotCoreCustom.targetExtPower);
+        telemetryA.addData("extAMPS", robotCoreCustom.motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS) + robotCoreCustom.motorControllerExt1.motor.getCurrent(CurrentUnit.AMPS));
         telemetryA.update();
     }
 
@@ -271,9 +274,9 @@ public class MainDriveOpmode extends OpMode{
         );
          */
 
-        if (gripperPitchTracking == gripperPitchPos.FORWARD) robotCoreCustom.setGripperPitch(1);
-        else if (gripperPitchTracking == gripperPitchPos.BACKWARD) robotCoreCustom.setGripperPitch(0.3);
-        else if (gripperPitchTracking == gripperPitchPos.MIDDLE) robotCoreCustom.setGripperPitch(0.7);
+        if (gripperPitchTracking == gripperPitchPos.FORWARD) robotCoreCustom.setGripperPitch(1); //1
+        else if (gripperPitchTracking == gripperPitchPos.MIDDLE) robotCoreCustom.setGripperPitch(0.7); //0.7
+        else if (gripperPitchTracking == gripperPitchPos.BACKWARD) robotCoreCustom.setGripperPitch(0.3); // 0.3
 
         robotCoreCustom.setGripper(
                 (gripperTracking == gripperPos.OPEN) ? 0.8 : 0.45 // Adjust positions for open/close

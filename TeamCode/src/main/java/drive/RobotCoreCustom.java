@@ -199,8 +199,6 @@ public class RobotCoreCustom {
      * Sets the gripper rollers' direction and speed.
      * When direction is FORWARD, servos are set towards position 1 with speed adjustment.
      * When direction is REVERSE, servos are set towards position 0 with speed adjustment.
-     * @param speed The speed value (0 to 1) to control the intensity.
-     * @param direction The direction (FORWARD or REVERSE).
      */
     public void setGripperRotation(double pos) {
         gripperRotation0.setPosition(1 * pos);
