@@ -296,9 +296,12 @@ public class MainDriveOpmode extends OpMode{
         // Toggle gripper pitch
         if (gamepad.b && gripperTimer.milliseconds() > 200) {
             gripperTimer.reset();
-            if (gripperPitchTracking == gripperPitchPos.FORWARD) gripperPitchTracking = gripperPitchPos.BACKWARD;
-            else if (gripperPitchTracking == gripperPitchPos.BACKWARD) gripperPitchTracking = gripperPitchPos.FORWARD;
-            else if (gripperPitchTracking == gripperPitchPos.MIDDLE) gripperPitchTracking = gripperPitchPos.BACKWARD;
+            if (gripperPitchTracking == gripperPitchPos.FORWARD)
+                gripperPitchTracking = gripperPitchPos.BACKWARD;
+            else if (gripperPitchTracking == gripperPitchPos.BACKWARD)
+                gripperPitchTracking = gripperPitchPos.FORWARD;
+            else if (gripperPitchTracking == gripperPitchPos.MIDDLE)
+                gripperPitchTracking = gripperPitchPos.BACKWARD;
         }
         if (gamepad.y && gripperTimer.milliseconds() > 200) {
             gripperTimer.reset();
@@ -314,12 +317,18 @@ public class MainDriveOpmode extends OpMode{
          */
 
         if (gripperPitchTracking == gripperPitchPos.FORWARD) robotCoreCustom.setGripperPitch(1); //1
-        else if (gripperPitchTracking == gripperPitchPos.MIDDLE) robotCoreCustom.setGripperPitch(0.7); //0.7
-        else if (gripperPitchTracking == gripperPitchPos.BACKWARD) robotCoreCustom.setGripperPitch(0.3); // 0.3
+        else if (gripperPitchTracking == gripperPitchPos.MIDDLE)
+            robotCoreCustom.setGripperPitch(0.7); //0.7
+        else if (gripperPitchTracking == gripperPitchPos.BACKWARD)
+            robotCoreCustom.setGripperPitch(0.3); // 0.3
 
         robotCoreCustom.setGripper(
                 (gripperTracking == gripperPos.OPEN) ? 0.8 : 0.45 // Adjust positions for open/close
         );
+        if (gripperRotationPosTarget > 0.5 + (((double) 1 /1800) * 180))
+            gripperRotationPosTarget = 0.5 + (((double) 1 /1800) * 180);
+        if (gripperRotationPosTarget < 0.5 - (((double) 1 /1800) * 180))
+            gripperRotationPosTarget = 0.5 - (((double) 1 /1800) * 180);
         robotCoreCustom.setGripperRotation(gripperRotationPosTarget);
     }
 
@@ -389,7 +398,7 @@ public class MainDriveOpmode extends OpMode{
                 rotationDataProcessor.addDataPoint(cameraCoreCustom.getComputedAngle());
                 cameraWasFound = true;
                 cameraResetTimer.reset();
-                gripperRotationPosTarget = Math.abs(cameraCoreCustom.getComputedAngle());
+                gripperRotationPosTarget = cameraCoreCustom.getComputedAngle() * (1/1800);
             }
     }
         if (cameraStateTracking == cameraState.AVERAGING && cameraUpdateTimer.milliseconds() > 3) {
