@@ -27,7 +27,8 @@ public class MainAutoRightV3 extends OpMode {
 
 	// Define poses
 	private final Pose startPose = new Pose(8.2, 65.75, Math.toRadians(0));
-	private final Pose pose0 = new Pose(36, 65, Math.toRadians(180)); //hang 0
+	private final Pose pose0 = new Pose(38, 65, Math.toRadians(180)); //hang 0
+
 	private final Pose pose1 = new Pose(35, 48, Math.toRadians(315));
 	private final Pose pose2 = new Pose(59, 26, Math.toRadians(315));
 	private final Pose pose3 = new Pose(21.1, 24, Math.toRadians(270));
@@ -51,7 +52,7 @@ public class MainAutoRightV3 extends OpMode {
 	ElapsedTime gripperTimer;
 	int[] targetArmPos = {70, 70};
 	int[] armDownPos = {70, 70};
-	int[] armUpPos = {2550, 85}; // gripperPitch 0.27 // gripperRotation 0.362
+	int[] armUpPos = {2570, 85}; // gripperPitch 0.27 // gripperRotation 0.362
 	int[] armScorePos = {0, 0};
 	int armState = -1;
 
@@ -136,24 +137,28 @@ public class MainAutoRightV3 extends OpMode {
 				pathState = 1;
 				armState = 0;
 				targetArmPos = armUpPos;
-				gripperPitchPosTarget = 0.28;
+				gripperPitchPosTarget = 0.3;
 				gripperRotationPosTarget = 0.362;
 				break;
 
 			case 1:
-				if (robotCoreCustom.isPathFinished(follower, pose0) && armState == 0 && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 2525) {
+				if (robotCoreCustom.isPathFinished(follower, pose0) && armState == 0 && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 2555) {
 					armState = 1;
 					follower.followPath(pushSamplesPC, true);
 					pathTimer.reset();
 					targetArmPos = armDownPos;
-					gripperPitchPosTarget = 0;
 					pathState = 2;
+					gripperPitchPosTarget = 0;
 				}
 				break;
 
 			case 2:
-				if (pathTimer.milliseconds() > 200) gripperTracking = MainDriveOpmode.gripperPos.OPEN;
-				if (robotCoreCustom.isPathFinished(follower, pose1)) {
+				if (pathTimer.milliseconds() > 200) {
+					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+					pathTimer.reset();
+
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose1) && pathTimer.milliseconds() > 100) {
 					follower.followPath(path2PC, true);
 					pathState = 3;
 				}
@@ -303,6 +308,7 @@ public class MainAutoRightV3 extends OpMode {
 	@Override
 	public void init_loop() {
 		robotCoreCustom.updateAll();
+		targetArmPos = new int[]{70, 100};
 		gripperChecking();
 	}
 
@@ -336,7 +342,7 @@ public class MainAutoRightV3 extends OpMode {
 		robotCoreCustom.setGripperPitch(gripperPitchPosTarget);
 
 		robotCoreCustom.setGripper(
-				(gripperTracking == MainDriveOpmode.gripperPos.OPEN) ? 0.8 : 0.42 // Adjust positions for open/close
+				(gripperTracking == MainDriveOpmode.gripperPos.OPEN) ? 0.8 : 0.3 // Adjust positions for open/close
 		);
 
 		robotCoreCustom.setGripperRotation(gripperRotationPosTarget);
