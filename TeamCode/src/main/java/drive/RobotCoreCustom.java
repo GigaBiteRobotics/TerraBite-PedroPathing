@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 
 public class RobotCoreCustom {
@@ -28,7 +30,7 @@ public class RobotCoreCustom {
     // PID coefficients for motors
     public PIDFCoefficients pidfCoefficientsExt = new PIDFCoefficients(20, 1, 0.2, 0.3);
     public PIDFCoefficients pidfCoefficientsRot = new PIDFCoefficients(0, 0, 0, 0);
-    public CustomPIDFController extPIDFController = new CustomPIDFController(24, 16, 0, 0);
+    public CustomPIDFController extPIDFController = new CustomPIDFController(30, 18, 0, 0);
     public int extTicks = 0;
     public double targetExtPower;
 
