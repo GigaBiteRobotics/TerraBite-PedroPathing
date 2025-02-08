@@ -247,7 +247,7 @@ public class MainDriveOpmode extends OpMode{
             targetArmPos[1] = (int) (240);
             targetArmPos[0] = (int) (250);
             gripperPitchTracking = gripperPitchPos.BACKWARD;
-	        targetSetPosTracking = targetSetPos.NA;
+            targetSetPosTracking = targetSetPos.NA;
         }
         if (gamepad2.dpad_left && setPositionTypeTracking == setPositionType.RIGHT) {
             targetSetPosTracking = targetSetPos.SCORE;
