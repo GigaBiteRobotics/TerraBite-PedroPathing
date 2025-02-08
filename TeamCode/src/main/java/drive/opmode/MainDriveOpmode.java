@@ -136,7 +136,6 @@ public class MainDriveOpmode extends OpMode{
         robotCoreCustom.homeRot();
     }
 
-    @SuppressLint("SuspiciousIndentation")
     @Override
     public void loop() {
         // Gamepad input handling
@@ -220,6 +219,7 @@ public class MainDriveOpmode extends OpMode{
             targetSetPosTracking = targetSetPos.NA;
         }
 
+
         if (gamepad2.dpad_up && setPositionTypeTracking == setPositionType.RIGHT) {
             targetSetPosTracking = targetSetPos.UP;
             upPosTracking = PosWait.GO;
@@ -269,9 +269,11 @@ public class MainDriveOpmode extends OpMode{
             if (gripperGrabSamplePos == 0) {
                 gripperPitchTracking = gripperPitchPos.FORWARD;
                 gripperTracking = gripperPos.OPEN;
+                targetArmPos[1] = (int) (3500);
                 gripperGrabSamplePos = 1;
                 grabSampleTimer.reset();
             }
+
             if (gripperGrabSamplePos == 1 && grabSampleTimer.milliseconds() > 200) {
                 targetArmPos[0] = (int) (150);
                 gripperGrabSamplePos = 2;
@@ -286,6 +288,7 @@ public class MainDriveOpmode extends OpMode{
                 gripperPitchTracking = gripperPitchPos.MIDDLE;
                 gripperGrabSamplePos = 0;
                 targetArmPos[0] = (int) (400);
+                targetArmPos[1] = (int) (4100);
             }
         }
         if (gamepad2.start && gripperRotationStateTracking == gripperRotationState.MANUAL && grabSampleTimer.milliseconds() > 500) {
@@ -336,6 +339,7 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("armPosExtTarget", targetArmPos[1]);
         telemetryA.addData("armPosRotTarget", targetArmPos[0]);
         telemetryA.addData("setPosTypeTracking", setPositionTypeTracking);
+        telemetryA.addData("pidPower", robotCoreCustom.targetExtPower);
 	    telemetryA.update();
     }
 
@@ -484,10 +488,10 @@ public class MainDriveOpmode extends OpMode{
         }
     }
     public void cameraButtonUpdate() {
-        if (cameraButtonTimer.milliseconds() > 500 && gamepad2.x) {
+        //if (cameraButtonTimer.milliseconds() > 500 && gamepad2.x) {
             //cameraButtonTimer.reset();
             //cameraStateTracking = cameraState.SEARCHING;
-        }
+        //}
     }
     public void cameraColorUpdate() {
         if (cameraColorTracking == cameraColor.YELLOW) {
@@ -500,7 +504,7 @@ public class MainDriveOpmode extends OpMode{
             cameraCoreCustom.setPipeline(2);
         }
     }
-        public void pickupSample() {
+    public void pickupSample() {
         if (gripperGrabSamplePos == 0) {
             gripperPitchTracking = gripperPitchPos.FORWARD;
             gripperTracking = gripperPos.OPEN;

@@ -342,7 +342,7 @@ public class MainAutoRightV3 extends OpMode {
 		robotCoreCustom.setGripperPitch(gripperPitchPosTarget);
 
 		robotCoreCustom.setGripper(
-				(gripperTracking == MainDriveOpmode.gripperPos.OPEN) ? 0.8 : 0.3 // Adjust positions for open/close
+				(gripperTracking == MainDriveOpmode.gripperPos.OPEN) ? 0.8 : 0.37 // Adjust positions for open/close
 		);
 
 		robotCoreCustom.setGripperRotation(gripperRotationPosTarget);
