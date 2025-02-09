@@ -24,12 +24,12 @@ class MoveAction extends Action {
 
         // construct a path from the followers current pose
         // to our target stop pose.
-        startPose_ = context.follower().getPose();
+        startPose_ = context.follower.getPose();
         Point p0 = new Point(startPose_);
         Point p1 = new Point(stopPose_);
         BezierLine line = new BezierLine(p0, p1);
         path_ = new Path(line);
-        context.follower().followPath(path_);
+        context.follower.followPath(path_);
         return Status.Success;
     }
 
@@ -45,10 +45,10 @@ class MoveAction extends Action {
 
         // fail if for some reason, we are not following
         // this actions path.
-        if(context.follower().getCurrentPath() != path_) {
+        if(context.follower.getCurrentPath() != path_) {
             return Status.Failed;
         }
-        if(context.follower().isBusy()) {
+        if(context.follower.isBusy()) {
             return Status.Continue;
         }
         // pathing is following our path
