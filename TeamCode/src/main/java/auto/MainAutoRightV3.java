@@ -45,14 +45,14 @@ public class MainAutoRightV3 extends OpMode {
 	private PathChain hangPreloadPC, pushSamplesPC, hang1PC, hang2PC, hang3PC, hang4PC, parkPC, path2PC, path3PC, path4PC, path5PC, path6PC, path7PC, path8PC, backPC;
 	private GoBildaPinpointDriver odo;
 	private final ElapsedTime pathTimer = new ElapsedTime();
-	double gripperRotationPosTarget = .474;
+	double gripperRotationPosTarget = 0.464;
 	MainDriveOpmode.gripperPos gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
 	MainDriveOpmode.gripperPitchPos gripperPitchTracking = MainDriveOpmode.gripperPitchPos.FORWARD;
 	double gripperPitchPosTarget = 1;
 	ElapsedTime gripperTimer;
 	int[] targetArmPos = {70, 70};
 	int[] armDownPos = {70, 70};
-	int[] armUpPos = {2570, 85}; // gripperPitch 0.27 // gripperRotation 0.362
+	int[] armUpPos = {2590, 90}; // gripperPitch 0.27 // gripperRotation 0.362
 	int[] armScorePos = {0, 0};
 	int armState = -1;
 
@@ -138,7 +138,7 @@ public class MainAutoRightV3 extends OpMode {
 				armState = 0;
 				targetArmPos = armUpPos;
 				gripperPitchPosTarget = 0.3;
-				gripperRotationPosTarget = 0.362;
+				gripperRotationPosTarget = 0.582;
 				break;
 
 			case 1:
@@ -153,7 +153,7 @@ public class MainAutoRightV3 extends OpMode {
 				break;
 
 			case 2:
-				if (pathTimer.milliseconds() > 200) {
+				if (pathTimer.milliseconds() > 250) {
 					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
 					pathTimer.reset();
 

@@ -35,16 +35,14 @@ public class RotationDataProcessorCustom {
 	}
 	public double getMode() {
 		if (dataPoints == null || dataPoints.isEmpty()) {
-			return Double.NaN; // Use NaN to indicate an empty dataset.
+			return Double.NaN;
 		}
 
-		// Count the frequency of each number in the list.
 		HashMap<Double, Integer> frequencyMap = new HashMap<>();
-		for (double num : dataPoints) { // Unboxing happens here
-			frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
+		for (double num : dataPoints) {
+			frequencyMap.merge(num, 1, Integer::sum);
 		}
 
-		// Find the key with the highest frequency.
 		double mode = Double.NaN;
 		int maxCount = 0;
 		for (Map.Entry<Double, Integer> entry : frequencyMap.entrySet()) {

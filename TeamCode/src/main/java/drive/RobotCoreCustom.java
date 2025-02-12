@@ -10,10 +10,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-
 public class RobotCoreCustom {
     // Variables and instances for inverse kinematics and motor control
     InverseKinematics2D inverseKinematics2D = new InverseKinematics2D(0, 0, 0, 10000, 0);
@@ -34,10 +30,7 @@ public class RobotCoreCustom {
     public int extTicks = 0;
     public double targetExtPower;
 
-    // Homing power for motors
-    private final double rotHomingPower = -0.8;
-    private final double extHomingPower = -1;
-    // Servo components for the gripper
+	// Servo components for the gripper
     public Servo gripperRotation0, gripperRotation1, gripperPitch, gripper, sweeperServo;
     // Enum for homing states
     public enum HomingState {
@@ -154,7 +147,8 @@ public class RobotCoreCustom {
             extHomingState = HomingState.HOMING;
             motorControllerExt0.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             motorControllerExt1.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            motorControllerExt0.motor.setPower(extHomingPower);
+	        double extHomingPower = -1;
+	        motorControllerExt0.motor.setPower(extHomingPower);
             motorControllerExt1.motor.setPower(extHomingPower);
         }
     }
@@ -166,7 +160,9 @@ public class RobotCoreCustom {
         if (rotHomingState == HomingState.IDLE || rotHomingState == HomingState.SUCCESS) {
             rotHomingState = HomingState.HOMING;
             motorControllerRot.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            motorControllerRot.motor.setPower(rotHomingPower);
+	        // Homing power for motors
+	        double rotHomingPower = -0.8;
+	        motorControllerRot.motor.setPower(rotHomingPower);
         }
     }
 

@@ -34,25 +34,6 @@ public class CameraCoreCustom {
 			limelight.start();
 		}
 	}
-
-	/*
-	public List<LLResultTypes.ColorResult> getColor(int color) {
-		if (color == 0) limelight.pipelineSwitch(0);
-		else if (color == 1) limelight.pipelineSwitch(1);
-		else if (color ==2) limelight.pipelineSwitch(2);
-		result = limelight.getLatestResult();
-		colorResults = result.getColorResults();
-		return colorResults;
-	}
-	public boolean getHand(int human) {
-		if (human == 0) limelight.pipelineSwitch(3);
-		else limelight.pipelineSwitch(4);
-		result = limelight.getLatestResult();
-		colorResults = result.getColorResults();
-		if (result != null && result.isValid()) return result.getTa() > 1;
-		else return false;
-	}
-	*/
 	public double[][] getColorPoints() throws Exception {
 		return llDataFetcher.getPoints();
 	}
@@ -88,9 +69,8 @@ public class CameraCoreCustom {
 
 		// Calculate the angle of the long axis relative to the x-axis
 		double angleRadians = Math.atan2(longAxis[1], longAxis[0]);
-		double angleDegrees = Math.toDegrees(angleRadians);
 
-		return angleDegrees;
+		return Math.toDegrees(angleRadians);
 	}
 
 	public static double[][] getFurthestPoints(double[][] points) {

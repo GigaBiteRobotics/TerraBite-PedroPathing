@@ -2,10 +2,10 @@ package drive;
 
 public class CustomPIDFController {
 	// PIDF coefficients
-	private double kP;
-	private double kI;
-	private double kD;
-	private double kF;
+	private final double kP;
+	private final double kI;
+	private final double kD;
+	private final double kF;
 	public double error;
 
 	// Internal state variables
