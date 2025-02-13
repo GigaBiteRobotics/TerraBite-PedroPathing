@@ -27,7 +27,7 @@ public class LimelightDataFetcher {
         JSONArray retroArray = jsonObject.getJSONArray("Retro");
         return retroArray;
     }
-    public  double[][] GetPoints() throws Exception {
+    public  double[][] getPoints() throws Exception {
 
 
         try {

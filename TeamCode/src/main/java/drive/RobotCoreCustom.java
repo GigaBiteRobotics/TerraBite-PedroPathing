@@ -10,6 +10,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+
 public class RobotCoreCustom {
     // Variables and instances for inverse kinematics and motor control
     InverseKinematics2D inverseKinematics2D = new InverseKinematics2D(0, 0, 0, 10000, 0);
@@ -26,7 +30,7 @@ public class RobotCoreCustom {
     // PID coefficients for motors
     public PIDFCoefficients pidfCoefficientsExt = new PIDFCoefficients(20, 1, 0.2, 0.3);
     public PIDFCoefficients pidfCoefficientsRot = new PIDFCoefficients(0, 0, 0, 0);
-    public CustomPIDFController extPIDFController = new CustomPIDFController(24, 16, 0, 0);
+    public CustomPIDFController extPIDFController = new CustomPIDFController(40, 18, 0, 0);
     public int extTicks = 0;
     public double targetExtPower;
 
