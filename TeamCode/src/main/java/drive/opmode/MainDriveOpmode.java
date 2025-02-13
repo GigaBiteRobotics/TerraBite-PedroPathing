@@ -103,6 +103,8 @@ public class MainDriveOpmode extends OpMode{
     gripperPitchPos gripperPitchTracking;
     ElapsedTime gripperTimer;
     PosWait downPosTracking;
+    double llXPos;
+    double llYPos;
     PosWait upPosTracking;
     targetSetPos targetSetPosTracking = targetSetPos.NA;
     // Telemetry
@@ -286,12 +288,12 @@ public class MainDriveOpmode extends OpMode{
             if (gripperGrabSamplePos == 0) {
                 gripperPitchTracking = gripperPitchPos.FORWARD;
                 gripperTracking = gripperPos.OPEN;
-                targetArmPos[1] = (int) (3500);
+                targetArmPos[1] = (int) robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() - 640 - (llYPos - 270);
                 gripperGrabSamplePos = 1;
                 grabSampleTimer.reset();
             }
 
-            if (gripperGrabSamplePos == 1 && grabSampleTimer.milliseconds() > 200) {
+            if (gripperGrabSamplePos == 1 && grabSampleTimer.milliseconds() > 400) {
                 targetArmPos[0] = (int) (150);
                 gripperGrabSamplePos = 2;
                 grabSampleTimer.reset();
@@ -336,6 +338,11 @@ public class MainDriveOpmode extends OpMode{
         follower.update();
         updateArmLimits();
         robotCoreCustom.updateAll();
+	    try {
+            llXPos = cameraCoreCustom.getLLBoxPos()[0];
+            llYPos = cameraCoreCustom.getLLBoxPos()[1];
+	    } catch (Exception ignore) {}
+
 
         // Telemetry for debugging
         telemetryA.addData("cameraColor", cameraColorTracking);
@@ -345,11 +352,12 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("cameraStateTracking", cameraStateTracking);
         telemetryA.addData("rectangleInView", cameraCoreCustom.isRectangleInView());
         telemetryA.addData("dataset size", rotationDataProcessor.dataPoints.size());
-        try {
+	    try {
+		    telemetryA.addData("XLLPos", llXPos);
+            telemetryA.addData("YLLPos", llYPos);
             telemetryA.addData("computedAngle", cameraCoreCustom.getComputedAngle());
             telemetryA.addData("rotationDataProcessor", rotationDataProcessor.getAverage());
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (Exception ignored) {
         }
         telemetryA.addData("armPosExt", robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
         telemetryA.addData("armPosRot", robotCoreCustom.motorControllerRot.motor.getCurrentPosition());
@@ -500,11 +508,12 @@ public class MainDriveOpmode extends OpMode{
     public void cameraRotationUpdate() throws Exception {
         double datapoint = cameraCoreCustom.getComputedAngle();
         if (datapoint != 0) {
-            rotationDataProcessor.addDataPoint(Math.abs(datapoint));
+            rotationDataProcessor.addDataPoint((datapoint));
         }
         rotationDataProcessor.removeOldDataPoints(15);
+        rotationDataProcessor.removeOutliers();
         if (cameraStateTracking == cameraState.SEARCHING && gripperRotationStateTracking == gripperRotationState.AUTO) {
-            gripperRotationPosTarget = (rotationDataProcessor.getAverage() +45) * ((double) 1/1800) + 0.5;
+            gripperRotationPosTarget = (rotationDataProcessor.getAverage()) * ((double) 1/1800) + 0.5;
         }
     }
 

@@ -26,6 +26,35 @@ public class CameraCoreCustom {
 		limelight.setPollRateHz(100);
 		limelight.start();
 	}
+	public double[] getLLBoxPos() throws Exception {
+		double[][] points = llDataFetcher.getPoints();
+		return findCenter(points);
+	}
+	public static double[] findCenter(double[][] points) {
+		if (points == null || points.length == 0) {
+			throw new IllegalArgumentException("The input array cannot be null or empty.");
+		}
+
+		double sumX = 0.0;
+		double sumY = 0.0;
+		int numPoints = points.length;
+
+		// Iterate through all points in the array
+		for (int a = 0; a < numPoints; a++) {
+			if (points[a] == null || points[a].length < 2) {
+				throw new IllegalArgumentException("Each point must have at least two coordinates (x and y).");
+			}
+			// Sum the x and y coordinates
+			sumX += points[a][0]; // x-coordinate
+			sumY += points[a][1]; // y-coordinate
+		}
+
+		// Calculate the average (center point)
+		double centerX = sumX / numPoints;
+		double centerY = sumY / numPoints;
+
+		return new double[]{centerX, centerY};
+	}
 
 	public void setPipeline(int pl) {
 		if (pl < 10 && pl > 0) {
