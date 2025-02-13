@@ -26,6 +26,35 @@ public class CameraCoreCustom {
 		limelight.setPollRateHz(100);
 		limelight.start();
 	}
+	public double[] getLLBoxPos() throws Exception {
+		double[][] points = llDataFetcher.getPoints();
+		return findCenter(points);
+	}
+	public static double[] findCenter(double[][] points) {
+		if (points == null || points.length == 0) {
+			throw new IllegalArgumentException("The input array cannot be null or empty.");
+		}
+
+		double sumX = 0.0;
+		double sumY = 0.0;
+		int numPoints = points.length;
+
+		// Iterate through all points in the array
+		for (int a = 0; a < numPoints; a++) {
+			if (points[a] == null || points[a].length < 2) {
+				throw new IllegalArgumentException("Each point must have at least two coordinates (x and y).");
+			}
+			// Sum the x and y coordinates
+			sumX += points[a][0]; // x-coordinate
+			sumY += points[a][1]; // y-coordinate
+		}
+
+		// Calculate the average (center point)
+		double centerX = sumX / numPoints;
+		double centerY = sumY / numPoints;
+
+		return new double[]{centerX, centerY};
+	}
 
 	public void setPipeline(int pl) {
 		if (pl < 10 && pl > 0) {
@@ -34,25 +63,6 @@ public class CameraCoreCustom {
 			limelight.start();
 		}
 	}
-
-	/*
-	public List<LLResultTypes.ColorResult> getColor(int color) {
-		if (color == 0) limelight.pipelineSwitch(0);
-		else if (color == 1) limelight.pipelineSwitch(1);
-		else if (color ==2) limelight.pipelineSwitch(2);
-		result = limelight.getLatestResult();
-		colorResults = result.getColorResults();
-		return colorResults;
-	}
-	public boolean getHand(int human) {
-		if (human == 0) limelight.pipelineSwitch(3);
-		else limelight.pipelineSwitch(4);
-		result = limelight.getLatestResult();
-		colorResults = result.getColorResults();
-		if (result != null && result.isValid()) return result.getTa() > 1;
-		else return false;
-	}
-	*/
 	public double[][] getColorPoints() throws Exception {
 		return llDataFetcher.getPoints();
 	}
@@ -88,9 +98,8 @@ public class CameraCoreCustom {
 
 		// Calculate the angle of the long axis relative to the x-axis
 		double angleRadians = Math.atan2(longAxis[1], longAxis[0]);
-		double angleDegrees = Math.toDegrees(angleRadians);
 
-		return angleDegrees;
+		return Math.toDegrees(angleRadians);
 	}
 
 	public static double[][] getFurthestPoints(double[][] points) {
