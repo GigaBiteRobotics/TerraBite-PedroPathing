@@ -22,68 +22,48 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @TeleOp(name="TerraBiteDrive V1", group="!advanced")
-public class MainDriveOpmode extends OpMode{
+public class MainDriveOpmode extends OpMode {
+    // Initialize robot components and variables
     RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
     RotationDataProcessorCustom rotationDataProcessor = new RotationDataProcessorCustom();
     CameraCoreCustom cameraCoreCustom = new CameraCoreCustom();
+
+    // Arm position and velocity targets
     double[] targetArmPos = {0, 0}; // Arm position: {rotation, extension}
     double[] targetArmVel = {0, 0}; // Arm velocity: {rotation, extension}
+
+    // Timers for various tasks
     ElapsedTime gamePadPollingRate = new ElapsedTime();
-    int pollingRateMS = 5; // Polling rate for gamepad input
-    boolean canExtend, canRetract, canTurnPositive, canTurnNegative = true; // Arm limits
+    int pollingRateMS = 5; // Polling rate for gamepad input in milliseconds
+    boolean canExtend, canRetract, canTurnPositive, canTurnNegative = true; // Arm movement limits
     Follower follower;
-    Pose startPose = new Pose(7.5, 88.6, 0);
+    Pose startPose = new Pose(7.5, 88.6, 0); // Starting position of the robot
     ElapsedTime timer = new ElapsedTime();
     ElapsedTime grabSampleTimer = new ElapsedTime();
     ElapsedTime cameraButtonTimer = new ElapsedTime();
     ElapsedTime cameraUpdateTimer = new ElapsedTime();
     ElapsedTime cameraResetTimer = new ElapsedTime();
-    double cameraResetTimerMS = 1000;
-    boolean cameraWasFound = false;
-    int cameraFrameCount = 0;
-    // Enums to track gripper states
-    public enum gripperPos {
-        OPEN,
-        CLOSE
-    }
-    public enum gripperPitchPos {
-        FORWARD,
-        BACKWARD,
-        MIDDLE
-    }
-    public enum PosWait {
-        WAIT,
-        WAIT1,
-        GO
-    }
-    public enum targetSetPos {
-        DOWN,
-        UP,
-        NA,
-        VEL
-    }
-    public enum gripperRotationState {
-        AUTO,
-        MANUAL
-    }
-    public enum cameraState {
-        SEARCHING,
-        AVERAGING,
-        FOUND,
-        IDLE,
-    }
-    public enum cameraColor {
-        RED,
-        BLUE,
-        YELLOW
-    }
+    double cameraResetTimerMS = 1000; // Time to reset camera state
+    boolean cameraWasFound = false; // Tracks if the camera has found a target
+    int cameraFrameCount = 0; // Counts frames processed by the camera
+
+    // Enums to track various states
+    public enum gripperPos { OPEN, CLOSE } // Gripper open/close states
+    public enum gripperPitchPos { FORWARD, BACKWARD, MIDDLE } // Gripper pitch positions
+    public enum PosWait { WAIT, WAIT1, GO } // Position waiting states
+    public enum targetSetPos { DOWN, UP, NA, VEL } // Arm target positions
+    public enum gripperRotationState { AUTO, MANUAL } // Gripper rotation control modes
+    public enum cameraState { SEARCHING, AVERAGING, FOUND, IDLE } // Camera states
+    public enum cameraColor { RED, BLUE, YELLOW } // Camera color pipelines
+
+    // State tracking variables
     cameraState cameraStateTracking = cameraState.SEARCHING;
     cameraColor cameraColorTracking = cameraColor.YELLOW;
     gripperRotationState gripperRotationStateTracking = gripperRotationState.MANUAL;
-    double rotationalExponentialOutput;
-    double rotationalSensitivity;
-    double rotationalForwardOffset;
-    int gripperGrabSamplePos = 0;
+    double rotationalExponentialOutput; // Exponential output for rotational control
+    double rotationalSensitivity; // Sensitivity for rotational control
+    double rotationalForwardOffset; // Forward offset for rotational control
+    int gripperGrabSamplePos = 0; // Gripper sample grabbing position
 
     // Gripper state tracking variables
     gripperPos gripperTracking;
@@ -92,10 +72,10 @@ public class MainDriveOpmode extends OpMode{
     PosWait downPosTracking;
     PosWait upPosTracking;
     targetSetPos targetSetPosTracking = targetSetPos.NA;
-    // Telemetry
-    Telemetry telemetryA;
-    double gripperRotationPosTarget = 0.474;
 
+    // Telemetry for debugging
+    Telemetry telemetryA;
+    double gripperRotationPosTarget = 0.474; // Target position for gripper rotation
 
     @Override
     public void init() {
@@ -108,7 +88,7 @@ public class MainDriveOpmode extends OpMode{
         gripperTimer.reset();
         telemetryA = new MultipleTelemetry(this.telemetry, FtcDashboard.getInstance().getTelemetry());
         telemetryA.update();
-        cameraCoreCustom.limelightCoreCustomInit(hardwareMap);
+        cameraCoreCustom.limelightCoreCustomInit(hardwareMap); // Initialize camera
     }
 
     @Override
@@ -118,12 +98,13 @@ public class MainDriveOpmode extends OpMode{
 
     @Override
     public void start() {
+        // Start teleop drive and reset timers
         follower.startTeleopDrive();
         timer.reset();
         gripperPitchTracking = gripperPitchPos.BACKWARD;
         gripperTracking = gripperPos.CLOSE;
         gripperTimer.reset();
-        robotCoreCustom.homeRot();
+        robotCoreCustom.homeRot(); // Home the rotation arm
     }
 
     @Override
@@ -132,11 +113,12 @@ public class MainDriveOpmode extends OpMode{
         gamePadCont2DPos(gamepad2);
         gripperChecking(gamepad2);
         cameraButtonUpdate();
-	    try {
-		    cameraRotationUpdate();
-	    } catch (Exception ignored){}
 
-	    // Homing functions for arm
+        try {
+            cameraRotationUpdate();
+        } catch (Exception ignored) {}
+
+        // Homing functions for arm
         if (gamepad2.dpad_right) {
             robotCoreCustom.homeRot();
         }
@@ -155,17 +137,14 @@ public class MainDriveOpmode extends OpMode{
             robotCoreCustom.sweep();
         }
 
-
         // Set positions
         if (gamepad2.dpad_down) {
             targetSetPosTracking = targetSetPos.DOWN;
             downPosTracking = PosWait.WAIT;
             gripperPitchTracking = gripperPitchPos.FORWARD;
-
         }
         if (downPosTracking == PosWait.WAIT && targetSetPosTracking == targetSetPos.DOWN) {
             targetArmPos[1] = (int) (100);
-            //targetArmPos[0] = (int) (1200);
             if (robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 1600) {
                 downPosTracking = PosWait.GO;
             }
@@ -176,7 +155,6 @@ public class MainDriveOpmode extends OpMode{
             targetArmPos[1] = (int) (1800);
             targetSetPosTracking = targetSetPos.NA;
         }
-
 
         if (gamepad2.dpad_up) {
             targetSetPosTracking = targetSetPos.UP;
@@ -201,26 +179,7 @@ public class MainDriveOpmode extends OpMode{
             targetSetPosTracking = targetSetPos.NA;
         }
 
-        /*
-        if (gripperTimer.milliseconds() > 200 && gamepad2.x || gripperGrabSamplePos == 1 || gripperGrabSamplePos == 2) {
-            if (gripperGrabSamplePos == 0) {
-                gripperPitchTracking = gripperPitchPos.FORWARD;
-                gripperTracking = gripperPos.OPEN;
-                gripperGrabSamplePos = 1;
-                grabSampleTimer.reset();
-            }
-            if (gripperGrabSamplePos == 1 && grabSampleTimer.milliseconds() > 250) {
-                gripperTracking = gripperPos.CLOSE;
-                gripperGrabSamplePos = 2;
-            }
-            if (gripperGrabSamplePos == 2 && grabSampleTimer.milliseconds() > 100) {
-                gripperPitchTracking = gripperPitchPos.MIDDLE;
-                gripperGrabSamplePos = 0;
-            }
-        }
-
-         */
-
+        // Camera color toggle
         if (gamepad1.back && grabSampleTimer.milliseconds() > 200) {
             if (cameraColorTracking == cameraColor.YELLOW) {
                 cameraColorTracking = cameraColor.RED;
@@ -236,7 +195,7 @@ public class MainDriveOpmode extends OpMode{
         // Update robot systems
         rotationalSensitivity = 2;  // Adjust this for desired sensitivity
         rotationalExponentialOutput = Math.signum(-gamepad1.right_stick_x) * Math.pow(Math.abs(gamepad1.right_stick_x), rotationalSensitivity);
-        rotationalForwardOffset = ((0 * 0));
+        rotationalForwardOffset = (0);
         follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x * -0.46, true);
         follower.update();
         updateArmLimits();
@@ -249,12 +208,14 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("cameraFrameCount", cameraFrameCount);
         telemetryA.addData("cameraStateTracking", cameraStateTracking);
         telemetryA.addData("rectangleInView", cameraCoreCustom.isRectangleInView());
-	    try {
-		    telemetryA.addData("computedAngle", cameraCoreCustom.getComputedAngle());
-	    } catch (Exception e) {
-		    throw new RuntimeException(e);
-	    }
-	    telemetryA.update();
+
+        try {
+            telemetryA.addData("computedAngle", cameraCoreCustom.getComputedAngle());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        telemetryA.update();
     }
 
     // Handles gamepad input for 2D arm control
@@ -306,13 +267,6 @@ public class MainDriveOpmode extends OpMode{
         }
 
         // Update hardware states based on tracking
-        /*
-        robotCoreCustom.setGripperPitch(
-                (gripperPitchTracking == gripperPitchPos.FORWARD) ? 1 : 0.3
-                // Adjust pitch as needed
-        );
-         */
-
         if (gripperPitchTracking == gripperPitchPos.FORWARD) robotCoreCustom.setGripperPitch(1); //1
         else if (gripperPitchTracking == gripperPitchPos.MIDDLE) robotCoreCustom.setGripperPitch(0.7); //0.7
         else if (gripperPitchTracking == gripperPitchPos.BACKWARD) robotCoreCustom.setGripperPitch(0.3); // 0.3
@@ -366,6 +320,8 @@ public class MainDriveOpmode extends OpMode{
             }
         }
     }
+
+    // Updates camera rotation based on target detection
     public void cameraRotationUpdate() throws Exception {
         if (cameraStateTracking == cameraState.SEARCHING) {
             gripperRotationStateTracking = gripperRotationState.AUTO;
@@ -379,7 +335,6 @@ public class MainDriveOpmode extends OpMode{
                 cameraFrameCount = 0;
                 cameraWasFound = false;  // Add this
             }
-
         }
         if (cameraStateTracking == cameraState.FOUND) {
             if (!cameraCoreCustom.isRectangleInView()) {  // This should be checking for lost target
@@ -391,21 +346,24 @@ public class MainDriveOpmode extends OpMode{
                 cameraResetTimer.reset();
                 gripperRotationPosTarget = Math.abs(cameraCoreCustom.getComputedAngle());
             }
-    }
+        }
         if (cameraStateTracking == cameraState.AVERAGING && cameraUpdateTimer.milliseconds() > 3) {
             cameraUpdateTimer.reset();
             rotationDataProcessor.removeOutliers();
             cameraStateTracking = cameraState.SEARCHING;
             gripperRotationStateTracking = gripperRotationState.MANUAL;
-
         }
     }
+
+    // Updates camera state based on button input
     public void cameraButtonUpdate() {
         if (cameraButtonTimer.milliseconds() > 500 && gamepad2.x) {
             cameraButtonTimer.reset();
             cameraStateTracking = cameraState.SEARCHING;
         }
     }
+
+    // Updates camera color pipeline
     public void cameraColorUpdate() {
         if (cameraColorTracking == cameraColor.YELLOW) {
             cameraCoreCustom.setPipeline(0);
@@ -417,7 +375,9 @@ public class MainDriveOpmode extends OpMode{
             cameraCoreCustom.setPipeline(2);
         }
     }
-        public void pickupSample() {
+
+    // Handles sample pickup sequence
+    public void pickupSample() {
         if (gripperGrabSamplePos == 0) {
             gripperPitchTracking = gripperPitchPos.FORWARD;
             gripperTracking = gripperPos.OPEN;
