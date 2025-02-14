@@ -6,14 +6,20 @@ import java.util.Map;
 
 public class RotationDataProcessorCustom {
 	public ArrayList<Double> dataPoints = new ArrayList<>();
+	public ArrayList<Double> dataPointAges = new ArrayList<>();
 	private static final double outlierThreshold = 1.5;
 	public int counter = 0;
+	public RotationDataProcessorCustom(double maxAge) {
+	}
 
-	public void addDataPoint(double dataPoint) {
+	public void addDataPoint(double dataPoint, double datapointAge) {
 		dataPoints.add(dataPoint);
+		dataPointAges.add(datapointAge);
+		counter ++;
 	}
 	public void clearDataPoints() {
 		dataPoints.clear();
+		dataPointAges.clear();
 	}
 	public double getAverage() {
 		double sum = 0;
@@ -45,7 +51,14 @@ public class RotationDataProcessorCustom {
 	public void removeOldDataPoints(int maxDataPoints) {
 		while (dataPoints.size() > maxDataPoints) {
 			dataPoints.remove(0);
-			counter ++;
+			dataPointAges.remove(0);
+		}
+		for (int i = 0; i < dataPoints.size(); i++) {
+			if (dataPointAges.get(i) > 1000 + dataPointAges.get(dataPointAges.size() - 1)) {
+				dataPoints.remove(i);
+				dataPointAges.remove(i);
+				i--;
+			}
 		}
 	}
 }

@@ -27,7 +27,7 @@ import pedroPathing.constants.LConstants;
 @TeleOp(name="TerraBiteDrive V1", group="!advanced")
 public class MainDriveOpmode extends OpMode{
     RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
-    RotationDataProcessorCustom rotationDataProcessor = new RotationDataProcessorCustom();
+    RotationDataProcessorCustom rotationDataProcessor = new RotationDataProcessorCustom(1000);
     CameraCoreCustom cameraCoreCustom = new CameraCoreCustom();
     double[] targetArmPos = {0, 0}; // Arm position: {rotation, extension}
     double[] targetArmVel = {0, 0}; // Arm velocity: {rotation, extension}
@@ -110,6 +110,7 @@ public class MainDriveOpmode extends OpMode{
     // Telemetry
     Telemetry telemetryA;
     double gripperRotationPosTarget = 0.474;
+    ElapsedTime datapointAge = new ElapsedTime();
 
 
     @Override
@@ -139,6 +140,7 @@ public class MainDriveOpmode extends OpMode{
         gripperTracking = gripperPos.CLOSE;
         gripperTimer.reset();
         robotCoreCustom.homeRot();
+        datapointAge.reset();
     }
 
     @Override
@@ -288,17 +290,17 @@ public class MainDriveOpmode extends OpMode{
             if (gripperGrabSamplePos == 0) {
                 gripperPitchTracking = gripperPitchPos.FORWARD;
                 gripperTracking = gripperPos.OPEN;
-                targetArmPos[1] = (int) robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() - 640 - (llYPos - 270);
+                targetArmPos[1] = (int) robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() - 640 - (llYPos - (gripperRotationStateTracking == gripperRotationState.MANUAL ? 150 : 250)); //250
                 gripperGrabSamplePos = 1;
                 grabSampleTimer.reset();
             }
 
             if (gripperGrabSamplePos == 1 && grabSampleTimer.milliseconds() > 400) {
-                targetArmPos[0] = (int) (150);
+                targetArmPos[0] = (int) (120);
                 gripperGrabSamplePos = 2;
                 grabSampleTimer.reset();
             }
-            if (gripperGrabSamplePos == 2 && grabSampleTimer.milliseconds() > 100) {
+            if (gripperGrabSamplePos == 2 && grabSampleTimer.milliseconds() > 300) {
                 gripperTracking = gripperPos.CLOSE;
                 gripperGrabSamplePos = 3;
                 grabSampleTimer.reset();
@@ -348,22 +350,10 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("cameraColor", cameraColorTracking);
         telemetryA.addData("gripperRotationPosTarget", gripperRotationPosTarget);
         telemetryA.addData("gripperRotationStateTracking", gripperRotationStateTracking);
-        telemetryA.addData("cameraFrameCount", cameraFrameCount);
-        telemetryA.addData("cameraStateTracking", cameraStateTracking);
-        telemetryA.addData("rectangleInView", cameraCoreCustom.isRectangleInView());
-        telemetryA.addData("dataset size", rotationDataProcessor.dataPoints.size());
-	    try {
-		    telemetryA.addData("XLLPos", llXPos);
-            telemetryA.addData("YLLPos", llYPos);
-            telemetryA.addData("computedAngle", cameraCoreCustom.getComputedAngle());
-            telemetryA.addData("rotationDataProcessor", rotationDataProcessor.getAverage());
-        } catch (Exception ignored) {
-        }
         telemetryA.addData("armPosExt", robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
         telemetryA.addData("armPosRot", robotCoreCustom.motorControllerRot.motor.getCurrentPosition());
         telemetryA.addData("armPosExtTarget", targetArmPos[1]);
         telemetryA.addData("armPosRotTarget", targetArmPos[0]);
-        telemetryA.addData("cameraCounter", rotationDataProcessor.counter);
         telemetryA.update();
     }
 
@@ -388,11 +378,11 @@ public class MainDriveOpmode extends OpMode{
         // Toggle roller states
         if ((gamepad.left_bumper && gripperRotationStateTracking == gripperRotationState.MANUAL) && gripperTimer.milliseconds() > 50) {
             gripperTimer.reset();
-            gripperRotationPosTarget = gripperRotationPosTarget - 0.007;
+            gripperRotationPosTarget = gripperRotationPosTarget + 0.007;
         }
         if ((gamepad.right_bumper && gripperRotationStateTracking == gripperRotationState.MANUAL) && gripperTimer.milliseconds() > 50) {
             gripperTimer.reset();
-            gripperRotationPosTarget = gripperRotationPosTarget + 0.007;
+            gripperRotationPosTarget = gripperRotationPosTarget - 0.007;
         }
         if (gripperRotationPosTarget > 1) gripperRotationPosTarget = 1;
         if (gripperRotationPosTarget < 0) gripperRotationPosTarget = 0;
@@ -436,15 +426,15 @@ public class MainDriveOpmode extends OpMode{
         if (gripperPitchTracking == gripperPitchPos.FORWARD)
             robotCoreCustom.setGripperPitch(1); //1
         else if (gripperPitchTracking == gripperPitchPos.MIDDLE)
-            robotCoreCustom.setGripperPitch(0.7); //0.7
+            robotCoreCustom.setGripperPitch(0.8); //0.7
         else if (gripperPitchTracking == gripperPitchPos.BACKWARD)
             robotCoreCustom.setGripperPitch(0.3); // 0.3
         else if (gripperPitchTracking == gripperPitchPos.FULLBACK)
             robotCoreCustom.setGripperPitch(0.0);
 
-        if (gripperTracking == gripperPos.OPEN) robotCoreCustom.setGripper(0.6);
-        if (gripperTracking == gripperPos.CLOSE) robotCoreCustom.setGripper(0.37);
-        if (gripperTracking == gripperPos.LIGHT) robotCoreCustom.setGripper(0.43);
+        if (gripperTracking == gripperPos.OPEN) robotCoreCustom.setGripper(0.65);
+        if (gripperTracking == gripperPos.CLOSE) robotCoreCustom.setGripper(0.46);
+        if (gripperTracking == gripperPos.LIGHT) robotCoreCustom.setGripper(0.5);
         // Clamp the gripperRotationPosTarget to its allowed range.
         if (gripperRotationPosTarget > 0.5 + (((double) 1 / 1800) * 180))
             gripperRotationPosTarget = 0.5 + (((double) 1 / 1800) * 180);
@@ -453,7 +443,7 @@ public class MainDriveOpmode extends OpMode{
 
 // Ensure gripperRotationPosTarget is a number. If not, reset it.
         if (Double.isNaN(gripperRotationPosTarget)) {
-            gripperRotationPosTarget = 0.474;
+            gripperRotationPosTarget = 0.5;
         }
 
 // Now safely set the servo.
@@ -507,11 +497,15 @@ public class MainDriveOpmode extends OpMode{
     public void cameraRotationUpdate() throws Exception {
         double datapoint = cameraCoreCustom.getComputedAngle();
         if (datapoint != 0) {
-            rotationDataProcessor.addDataPoint((Math.abs(datapoint) + 40));
+            rotationDataProcessor.addDataPoint((Math.abs(datapoint) + 40), datapointAge.milliseconds());
         }
-        rotationDataProcessor.removeOldDataPoints(10);
+        rotationDataProcessor.removeOldDataPoints(15);
         if (cameraStateTracking == cameraState.SEARCHING && gripperRotationStateTracking == gripperRotationState.AUTO) {
             gripperRotationPosTarget = (Math.abs(rotationDataProcessor.getAverage()) * ((double) 1/1800) + 0.5);
+        }
+        if (rotationDataProcessor.dataPoints.size() < 5) {
+            gripperRotationPosTarget = 0.5;
+            gripperRotationStateTracking = gripperRotationState.MANUAL;
         }
     }
 
