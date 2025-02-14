@@ -57,11 +57,9 @@ public class CameraCoreCustom {
 	}
 
 	public void setPipeline(int pl) {
-		if (pl < 10 && pl > 0) {
-			limelight.pipelineSwitch(pl);
-			limelight.setPollRateHz(100);
-			limelight.start();
-		}
+		limelight.pipelineSwitch(pl);
+		limelight.setPollRateHz(100);
+		limelight.start();
 	}
 	public double[][] getColorPoints() throws Exception {
 		return llDataFetcher.getPoints();

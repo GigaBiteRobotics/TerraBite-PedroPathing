@@ -363,8 +363,7 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("armPosRot", robotCoreCustom.motorControllerRot.motor.getCurrentPosition());
         telemetryA.addData("armPosExtTarget", targetArmPos[1]);
         telemetryA.addData("armPosRotTarget", targetArmPos[0]);
-        telemetryA.addData("setPosTypeTracking", setPositionTypeTracking);
-        telemetryA.addData("pidPower", robotCoreCustom.targetExtPower);
+        telemetryA.addData("cameraCounter", rotationDataProcessor.counter);
         telemetryA.update();
     }
 
@@ -508,12 +507,11 @@ public class MainDriveOpmode extends OpMode{
     public void cameraRotationUpdate() throws Exception {
         double datapoint = cameraCoreCustom.getComputedAngle();
         if (datapoint != 0) {
-            rotationDataProcessor.addDataPoint((datapoint));
+            rotationDataProcessor.addDataPoint((Math.abs(datapoint) + 40));
         }
-        rotationDataProcessor.removeOldDataPoints(15);
-        rotationDataProcessor.removeOutliers();
+        rotationDataProcessor.removeOldDataPoints(10);
         if (cameraStateTracking == cameraState.SEARCHING && gripperRotationStateTracking == gripperRotationState.AUTO) {
-            gripperRotationPosTarget = (rotationDataProcessor.getAverage()) * ((double) 1/1800) + 0.5;
+            gripperRotationPosTarget = (Math.abs(rotationDataProcessor.getAverage()) * ((double) 1/1800) + 0.5);
         }
     }
 
@@ -522,10 +520,10 @@ public class MainDriveOpmode extends OpMode{
             cameraCoreCustom.setPipeline(0);
         }
         if (cameraColorTracking == cameraColor.RED) {
-            cameraCoreCustom.setPipeline(1);
+            cameraCoreCustom.setPipeline(2);
         }
         if (cameraColorTracking == cameraColor.BLUE) {
-            cameraCoreCustom.setPipeline(2);
+            cameraCoreCustom.setPipeline(1);
         }
     }
 }

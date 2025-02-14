@@ -1,10 +1,13 @@
 package drive;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RotationDataProcessorCustom {
-	private ArrayList<Double> dataPoints = new ArrayList<>();
+	public ArrayList<Double> dataPoints = new ArrayList<>();
 	private static final double outlierThreshold = 1.5;
+	public int counter = 0;
 
 	public void addDataPoint(double dataPoint) {
 		dataPoints.add(dataPoint);
@@ -14,28 +17,35 @@ public class RotationDataProcessorCustom {
 	}
 	public double getAverage() {
 		double sum = 0;
-		for (double point : dataPoints) {
-			sum += point;
+		for (double value : dataPoints) {
+			sum += value;
 		}
 		return sum / dataPoints.size();
 	}
-	public void removeOutliers() {
-		if (dataPoints.size() < 3) return;
-		double mean = getAverage();
-		double standardDeviation = calculateStandardDeviation(dataPoints, mean);
-		ArrayList<Double> filteredData = new ArrayList<>();
-		for (double value : dataPoints) {
-			if (Math.abs(value - mean) <= outlierThreshold * standardDeviation) {
-				filteredData.add(value);
+	public double getMode() {
+		if (dataPoints == null || dataPoints.isEmpty()) {
+			return Double.NaN;
+		}
+
+		HashMap<Double, Integer> frequencyMap = new HashMap<>();
+		for (double num : dataPoints) {
+			frequencyMap.merge(num, 1, Integer::sum);
+		}
+
+		double mode = Double.NaN;
+		int maxCount = 0;
+		for (Map.Entry<Double, Integer> entry : frequencyMap.entrySet()) {
+			if (entry.getValue() > maxCount) {
+				maxCount = entry.getValue();
+				mode = entry.getKey();
 			}
 		}
-		dataPoints = filteredData;
+		return mode;
 	}
-	private double calculateStandardDeviation(ArrayList<Double> data, double mean) {
-		double sum = 0;
-		for (double value : data) {
-			sum += Math.pow(value - mean, 2);
+	public void removeOldDataPoints(int maxDataPoints) {
+		while (dataPoints.size() > maxDataPoints) {
+			dataPoints.remove(0);
+			counter ++;
 		}
-		return Math.sqrt(sum / data.size());
 	}
 }
