@@ -38,7 +38,7 @@ public class MainAutoRightV3 extends OpMode {
 	private final Pose pose5 = new Pose(21, 20, Math.toRadians(270));
 	private final Pose pose6 = new Pose(56.5, 12.5, Math.toRadians(270));
 	private final Pose pose7 = new Pose(21, 12.5, Math.toRadians(270));
-	private final Pose pose8 = new Pose(22, 34.6, Math.toRadians(180)); //pickup Position
+	private final Pose pose8 = new Pose(18, 34.6, Math.toRadians(180)); //pickup Position
 	private final Pose pose9 = new Pose(40.3, 67, Math.toRadians(180)); //hang 1
 	private final Pose pose10 = new Pose(40.3, 70, Math.toRadians(180)); //hang 2
 	private final Pose pose11 = new Pose(40.3, 72, Math.toRadians(180)); //hang 3
@@ -108,22 +108,22 @@ public class MainAutoRightV3 extends OpMode {
 				.build();
 
 		hang1PC = follower.pathBuilder()
-				.addPath(new BezierLine(new Point(pose8), new Point(pose9)))
+				.addPath(new BezierCurve(new Point(pose8),new Point(24, 60), new Point(pose9)))
 				.setConstantHeadingInterpolation(Math.toRadians(180))
 				.build();
 
 		hang2PC = follower.pathBuilder()
-				.addPath(new BezierLine(new Point(pose8), new Point(pose10)))
+				.addPath(new BezierCurve(new Point(pose8),new Point(24, 60), new Point(pose10)))
 				.setConstantHeadingInterpolation(Math.toRadians(180))
 				.build();
 
 		hang3PC = follower.pathBuilder()
-				.addPath(new BezierLine(new Point(pose8), new Point(pose11)))
+				.addPath(new BezierCurve(new Point(pose8),new Point(24, 60), new Point(pose11)))
 				.setConstantHeadingInterpolation(Math.toRadians(180))
 				.build();
 
 		hang4PC = follower.pathBuilder()
-				.addPath(new BezierLine(new Point(pose8), new Point(pose12)))
+				.addPath(new BezierCurve(new Point(pose8),new Point(24, 60), new Point(pose12)))
 				.setConstantHeadingInterpolation(Math.toRadians(180))
 				.build();
 		backPC = follower.pathBuilder()
@@ -193,6 +193,7 @@ public class MainAutoRightV3 extends OpMode {
 			case 7:
 				if (robotCoreCustom.isPathFinished(follower, pose6)) {
 					follower.followPath(path7PC, true);
+					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
 					pathState = 8;
 				}
 				break;
@@ -200,17 +201,21 @@ public class MainAutoRightV3 extends OpMode {
 			case 8:
 				if (robotCoreCustom.isPathFinished(follower, pose7)) {
 					follower.followPath(path8PC, true);
-					downPosTracking = MainDriveOpmode.PosWait.GO;
+					downPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
 					pathState = 9;
+					pathTimer.reset();
 				}
 				break;
 
 			case 9:
 				if (robotCoreCustom.isPathFinished(follower, pose8)) {
+					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
 					follower.followPath(hang1PC, true);
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
-					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.UP;
 					pathState = 10;
 				}
 				break;
@@ -218,7 +223,7 @@ public class MainAutoRightV3 extends OpMode {
 			case 10:
 				if (robotCoreCustom.isPathFinished(follower, pose9)) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
-					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
 					armState = 1;
 					follower.followPath(backPC, true);
 					pathTimer.reset();
@@ -226,24 +231,38 @@ public class MainAutoRightV3 extends OpMode {
 				break;
 
 			case 11:
-				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 1000) {
-					follower.followPath(hang2PC, true);
+				if (pathTimer.milliseconds() > 500) {
+					downPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
+					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.UP;
-					robotCoreCustom.gripperPitch.setPosition(0.7);
+					follower.followPath(hang2PC, true);
 					pathState = 12;
+					pathTimer.reset();
 				}
 				break;
 
 			case 12:
 				if (robotCoreCustom.isPathFinished(follower, pose10)) {
+					upPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
 				armState = 1;
 				follower.followPath(backPC, true);
 			}
 				break;
 
-			case 13: //grab
-				if (robotCoreCustom.isPathFinished(follower, pose8)) {
+			case 13:
+				if (pathTimer.milliseconds() > 500) {
+					downPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
+					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
+					upPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.UP;
 					follower.followPath(hang3PC, true);
 					pathState = 14;
 				}
@@ -251,14 +270,23 @@ public class MainAutoRightV3 extends OpMode {
 
 			case 14: // hang
 				if (robotCoreCustom.isPathFinished(follower, pose11)) {
-					robotCoreCustom.gripperPitch.setPosition(0.56);
+					upPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
 					armState = 1;
 					follower.followPath(backPC, true);
+					pathTimer.reset();
 				}
 				break;
 
-			case 15: //grab
-				if (robotCoreCustom.isPathFinished(follower, pose8)) {
+			case 15:
+				if (pathTimer.milliseconds() > 500) {
+					downPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
+					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
+					upPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.UP;
 					follower.followPath(hang4PC, true);
 					pathState = 16;
 				}
@@ -273,9 +301,6 @@ public class MainAutoRightV3 extends OpMode {
 				if (armState == 1) {
 					pathState = 17;
 					armState = 0;
-					targetArmPos = armDownPos;
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
-					robotCoreCustom.gripperPitch.setPosition(0.7);
 				}
 				break;
 
@@ -365,7 +390,7 @@ public class MainAutoRightV3 extends OpMode {
 	public void upArmUpdate() {
 		if (upPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.UP) {
 			targetArmPos[0] = (int) (2250);
-			targetArmPos[1] = (int) (0);
+			targetArmPos[1] = (int) (10);
 			gripperPitchPosTarget = 0.3;
 			upPosTracking = MainDriveOpmode.PosWait.GO;
 			gripperTracking = MainDriveOpmode.gripperPos.LIGHT;
