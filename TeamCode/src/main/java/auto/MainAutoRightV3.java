@@ -30,7 +30,6 @@ public class MainAutoRightV3 extends OpMode {
 	// Define poses
 	private final Pose startPose = new Pose(8.2, 65.75, Math.toRadians(0));
 	private final Pose pose0 = new Pose(38, 65, Math.toRadians(180)); //hang 0
-
 	private final Pose pose1 = new Pose(35, 48, Math.toRadians(315));
 	private final Pose pose2 = new Pose(59, 26, Math.toRadians(315));
 	private final Pose pose3 = new Pose(21.1, 24, Math.toRadians(270));
@@ -39,7 +38,7 @@ public class MainAutoRightV3 extends OpMode {
 	private final Pose pose6 = new Pose(56.5, 12.5, Math.toRadians(270));
 	private final Pose pose7 = new Pose(21, 12.5, Math.toRadians(270));
 	private final Pose pose8 = new Pose(18, 34.6, Math.toRadians(180)); //pickup Position
-	private final Pose pose9 = new Pose(40.3, 67, Math.toRadians(180)); //hang 1
+	private final Pose pose9 = new Pose(40.3, 68, Math.toRadians(180)); //hang 1
 	private final Pose pose10 = new Pose(40.3, 70, Math.toRadians(180)); //hang 2
 	private final Pose pose11 = new Pose(40.3, 72, Math.toRadians(180)); //hang 3
 	private final Pose pose12 = new Pose(40.3, 75, Math.toRadians(180)); //hang 4
@@ -224,24 +223,25 @@ public class MainAutoRightV3 extends OpMode {
 				if (robotCoreCustom.isPathFinished(follower, pose9)) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
-					armState = 1;
 					follower.followPath(backPC, true);
 					pathTimer.reset();
+					pathState = 11;
 				}
 				break;
 
 			case 11:
-				if (pathTimer.milliseconds() > 500) {
+				if (pathTimer.milliseconds() > 350) {
 					downPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8)) {
+					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
 				}
 				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.UP;
 					follower.followPath(hang2PC, true);
 					pathState = 12;
-					pathTimer.reset();
 				}
 				break;
 
@@ -249,16 +249,19 @@ public class MainAutoRightV3 extends OpMode {
 				if (robotCoreCustom.isPathFinished(follower, pose10)) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
-				armState = 1;
-				follower.followPath(backPC, true);
-			}
+					follower.followPath(backPC, true);
+					pathState = 13;
+					pathTimer.reset();
+				}
 				break;
 
 			case 13:
-				if (pathTimer.milliseconds() > 500) {
+				if (pathTimer.milliseconds() > 350) {
 					downPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8)) {
+					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
 				}
 				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
@@ -268,21 +271,23 @@ public class MainAutoRightV3 extends OpMode {
 				}
 				break;
 
-			case 14: // hang
+			case 14:
 				if (robotCoreCustom.isPathFinished(follower, pose11)) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
-					armState = 1;
+					pathState = 15;
 					follower.followPath(backPC, true);
 					pathTimer.reset();
 				}
 				break;
 
 			case 15:
-				if (pathTimer.milliseconds() > 500) {
+				if (pathTimer.milliseconds() > 350) {
 					downPosTracking = MainDriveOpmode.PosWait.WAIT;
 					targetSetPosTracking = MainDriveOpmode.targetSetPos.DOWN;
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+				}
+				if (robotCoreCustom.isPathFinished(follower, pose8)) {
+					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
 				}
 				if (robotCoreCustom.isPathFinished(follower, pose8) && pathTimer.milliseconds() > 2000) {
 					upPosTracking = MainDriveOpmode.PosWait.WAIT;
@@ -293,14 +298,12 @@ public class MainAutoRightV3 extends OpMode {
 				break;
 
 			case 16: // hang
-				if (robotCoreCustom.isPathFinished(follower, pose12) && armState == 0) {
-					armState = 1;
+				if (robotCoreCustom.isPathFinished(follower, pose12)) {
+					upPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
 					follower.followPath(backPC, true);
 					pathTimer.reset();
-				}
-				if (armState == 1) {
 					pathState = 17;
-					armState = 0;
 				}
 				break;
 
