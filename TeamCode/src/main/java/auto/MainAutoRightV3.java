@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.MissingFormatArgumentException;
+
 import drive.PersistentStorage;
 import drive.RobotCoreCustom;
 import drive.opmode.MainDriveOpmode;
@@ -45,16 +47,22 @@ public class MainAutoRightV3 extends OpMode {
 	private PathChain hangPreloadPC, pushSamplesPC, hang1PC, hang2PC, hang3PC, hang4PC, parkPC, path2PC, path3PC, path4PC, path5PC, path6PC, path7PC, path8PC, backPC;
 	private GoBildaPinpointDriver odo;
 	private final ElapsedTime pathTimer = new ElapsedTime();
-	double gripperRotationPosTarget = 0.464;
+	double gripperRotationPosTarget = 0.5;
 	MainDriveOpmode.gripperPos gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
 	MainDriveOpmode.gripperPitchPos gripperPitchTracking = MainDriveOpmode.gripperPitchPos.FORWARD;
 	double gripperPitchPosTarget = 1;
-	ElapsedTime gripperTimer;
+	ElapsedTime gripperTimer = new ElapsedTime();
 	int[] targetArmPos = {70, 70};
 	int[] armDownPos = {70, 70};
 	int[] armUpPos = {2590, 90}; // gripperPitch 0.27 // gripperRotation 0.362
 	int[] armScorePos = {0, 0};
 	int armState = -1;
+	int gripperGrabSamplePos = 0;
+	MainDriveOpmode.PosWait downPosTracking = MainDriveOpmode.PosWait.WAIT;
+	MainDriveOpmode.PosWait upPosTracking = MainDriveOpmode.PosWait.WAIT;
+	MainDriveOpmode.targetSetPos targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+	ElapsedTime scoreTimer = new ElapsedTime();
+
 
 	public void buildPaths() {
 		hangPreloadPC = follower.pathBuilder()
@@ -136,34 +144,26 @@ public class MainAutoRightV3 extends OpMode {
 				follower.followPath(hangPreloadPC, true);
 				pathState = 1;
 				armState = 0;
-				targetArmPos = armUpPos;
-				gripperPitchPosTarget = 0.3;
-				gripperRotationPosTarget = 0.582;
+				upPosTracking = MainDriveOpmode.PosWait.WAIT;
+				targetSetPosTracking = MainDriveOpmode.targetSetPos.UP;
 				break;
 
 			case 1:
-				if (robotCoreCustom.isPathFinished(follower, pose0) && armState == 0 && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 2555) {
+				if (robotCoreCustom.isPathFinished(follower, pose0) && armState == 0) {
 					armState = 1;
 					follower.followPath(pushSamplesPC, true);
+					upPosTracking = MainDriveOpmode.PosWait.WAIT;
+					targetSetPosTracking = MainDriveOpmode.targetSetPos.SCORE;
 					pathTimer.reset();
-					targetArmPos = armDownPos;
 					pathState = 2;
-					gripperPitchPosTarget = 0;
 				}
 				break;
-
 			case 2:
-				if (pathTimer.milliseconds() > 250) {
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
-					pathTimer.reset();
-
-				}
-				if (robotCoreCustom.isPathFinished(follower, pose1) && pathTimer.milliseconds() > 100) {
+				if (robotCoreCustom.isPathFinished(follower, pose1)) {
 					follower.followPath(path2PC, true);
 					pathState = 3;
 				}
 				break;
-
 			case 3:
 				if (robotCoreCustom.isPathFinished(follower, pose2)) {
 					follower.followPath(path3PC, true);
@@ -315,6 +315,8 @@ public class MainAutoRightV3 extends OpMode {
 	@Override
 	public void loop() {
 		follower.update();
+		upArmUpdate();
+		scoreUpdate();
 		autoUpdate();
 		robotCoreCustom.updateAll();
 		robotCoreCustom.updateHoming();
@@ -335,17 +337,50 @@ public class MainAutoRightV3 extends OpMode {
 	}
 	public void gripperChecking() {
 		// Update hardware states based on tracking
-
-		//if (gripperPitchTracking == MainDriveOpmode.gripperPitchPos.FORWARD) robotCoreCustom.setGripperPitch(1);
-		//else if (gripperPitchTracking == MainDriveOpmode.gripperPitchPos.BACKWARD) robotCoreCustom.setGripperPitch(0.26);
-		//else if (gripperPitchTracking == MainDriveOpmode.gripperPitchPos.MIDDLE) robotCoreCustom.setGripperPitch(0.7);\
 		robotCoreCustom.setGripperPitch(gripperPitchPosTarget);
 
-		robotCoreCustom.setGripper(
-				(gripperTracking == MainDriveOpmode.gripperPos.OPEN) ? 0.8 : 0.37 // Adjust positions for open/close
-		);
-
+		if (gripperTracking == MainDriveOpmode.gripperPos.OPEN) robotCoreCustom.setGripper(0.65);
+		if (gripperTracking == MainDriveOpmode.gripperPos.CLOSE) robotCoreCustom.setGripper(0.46);
+		if (gripperTracking == MainDriveOpmode.gripperPos.LIGHT) robotCoreCustom.setGripper(0.5);
 		robotCoreCustom.setGripperRotation(gripperRotationPosTarget);
+	}
+	public void scoreUpdate() {
+		if (downPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE) {
+			targetArmPos[0] = (int) (1550);
+			targetArmPos[1] = (int) (450);
+			gripperPitchPosTarget = 0.5;
+			scoreTimer.reset();
+			downPosTracking = MainDriveOpmode.PosWait.GO;
+		}
+		if (downPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && scoreTimer.milliseconds() > 350) {
+			gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+			targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+		}
+	}
+	public void upArmUpdate() {
+		if (upPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.UP) {
+			targetArmPos[0] = (int) (2250);
+			targetArmPos[1] = (int) (0);
+			gripperPitchPosTarget = 0.3;
+			upPosTracking = MainDriveOpmode.PosWait.GO;
+			gripperTracking = MainDriveOpmode.gripperPos.LIGHT;
+			gripperTimer.reset();
+		}
+		if (upPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.UP && gripperTimer.milliseconds() > 750) {
+			gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+			targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+		}
+	}
+	public void grabPosUpdate() {
+		if (downPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.DOWN) {
+			targetArmPos[1] = (int) (240);
+			targetArmPos[0] = (int) (250);
+			gripperPitchPosTarget = 0.5;
+			gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+		}
+		if (downPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.DOWN) {
+			gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+		}
 	}
 
 }

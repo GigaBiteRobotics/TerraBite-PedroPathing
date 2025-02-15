@@ -109,7 +109,7 @@ public class MainDriveOpmode extends OpMode{
     targetSetPos targetSetPosTracking = targetSetPos.NA;
     // Telemetry
     Telemetry telemetryA;
-    double gripperRotationPosTarget = 0.474;
+    double gripperRotationPosTarget = 0.5;
     ElapsedTime datapointAge = new ElapsedTime();
 
 
@@ -369,7 +369,7 @@ public class MainDriveOpmode extends OpMode{
                 targetArmPos[0] = robotCoreCustom.motorControllerRot.motor.getCurrentPosition();
             }
             targetArmVel[0] = (gamepad.left_stick_y * -1); // Rotation adjustment
-            targetArmPos[1] += (gamepad.right_stick_y * -30); // Extension adjustmentm,
+            targetArmPos[1] += (gamepad.right_stick_y * -30); // Extension adjustment
         }
     }
 
