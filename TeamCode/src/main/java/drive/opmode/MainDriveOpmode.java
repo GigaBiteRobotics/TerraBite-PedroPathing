@@ -56,7 +56,8 @@ public class MainDriveOpmode extends OpMode{
         BACKWARD,
         MIDDLE,
         FULLBACK,
-        UP
+        UP,
+        GRAB
     }
     public enum PosWait {
         WAIT,
@@ -199,7 +200,7 @@ public class MainDriveOpmode extends OpMode{
         }
         if (downPosTracking == PosWait.GO && targetSetPosTracking == targetSetPos.DOWN && setPositionTypeTracking == setPositionType.LEFT) {
             gripperPitchTracking = gripperPitchPos.MIDDLE;
-            targetArmPos[0] = (int) (350);
+            targetArmPos[0] = (int) (450);
             targetArmPos[1] = (int) (1800);
             targetSetPosTracking = targetSetPos.NA;
         }
@@ -236,7 +237,7 @@ public class MainDriveOpmode extends OpMode{
         if (upPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.UP) {
             targetArmPos[0] = (int) (2250);
             targetArmPos[1] = (int) (0);
-            gripperPitchTracking = gripperPitchPos.FULLBACK;
+            gripperPitchTracking = gripperPitchPos.BACKWARD;
             upPosTracking = MainDriveOpmode.PosWait.GO;
             gripperTracking = MainDriveOpmode.gripperPos.LIGHT;
             gripperTimer.reset();
@@ -261,9 +262,9 @@ public class MainDriveOpmode extends OpMode{
             downPosTracking = PosWait.GO;
         }
         if (downPosTracking == PosWait.GO && targetSetPosTracking == targetSetPos.DOWN && setPositionTypeTracking == setPositionType.RIGHT) {
-            targetArmPos[1] = (int) (240);
-            targetArmPos[0] = (int) (250);
-            gripperPitchTracking = gripperPitchPos.BACKWARD;
+            targetArmPos[1] = (int) (300);
+            targetArmPos[0] = (int) (200);
+            gripperPitchTracking = gripperPitchPos.GRAB;
             targetSetPosTracking = targetSetPos.NA;
         }
 
@@ -273,18 +274,19 @@ public class MainDriveOpmode extends OpMode{
         }
         if (downPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE) {
             targetArmPos[0] = (int) (2510);
-            targetArmPos[1] = (int) (0);
+            targetArmPos[1] = (int) (-10);
             gripperPitchTracking = gripperPitchPos.UP;
             scoreTimer.reset();
             downPosTracking = PosWait.WAIT1;
         }
-        if (downPosTracking == MainDriveOpmode.PosWait.WAIT1 && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && scoreTimer.milliseconds() > 300) {
-            targetArmPos[0] = (int) (1850);
-            gripperTracking = gripperPos.CLOSE;
+        if (downPosTracking == MainDriveOpmode.PosWait.WAIT1 && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && scoreTimer.milliseconds() > 350) {
+            targetArmPos[0] = (int) (1700);
+            gripperTracking = gripperPos.LIGHT;
             scoreTimer.reset();
             downPosTracking = MainDriveOpmode.PosWait.GO;
+            scoreTimer.reset();
         }
-        if (downPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() < 1900) {
+        if (downPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && scoreTimer.milliseconds() > 500) {
             gripperTracking = MainDriveOpmode.gripperPos.OPEN;
             targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
         }
@@ -293,7 +295,7 @@ public class MainDriveOpmode extends OpMode{
             if (gripperGrabSamplePos == 0) {
                 gripperPitchTracking = gripperPitchPos.FORWARD;
                 gripperTracking = gripperPos.OPEN;
-                targetArmPos[1] = (int) robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() - 640 - (llYPos - (gripperRotationStateTracking == gripperRotationState.MANUAL ? 150 : 250)); //250
+                if (gripperRotationStateTracking == gripperRotationState.AUTO) targetArmPos[1] = (int) robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() - 640 - (llYPos - (gripperRotationStateTracking == gripperRotationState.MANUAL ? 150 : 250)); //250
                 gripperGrabSamplePos = 1;
                 grabSampleTimer.reset();
             }
@@ -357,6 +359,7 @@ public class MainDriveOpmode extends OpMode{
         telemetryA.addData("armPosRot", robotCoreCustom.motorControllerRot.motor.getCurrentPosition());
         telemetryA.addData("armPosExtTarget", targetArmPos[1]);
         telemetryA.addData("armPosRotTarget", targetArmPos[0]);
+        telemetryA.addData("gripperPos", gripperPitchTracking);
         telemetryA.update();
     }
 
@@ -414,6 +417,9 @@ public class MainDriveOpmode extends OpMode{
                 gripperPitchTracking = gripperPitchPos.MIDDLE;
             else if (gripperPitchTracking == gripperPitchPos.UP)
                 gripperPitchTracking = gripperPitchPos.BACKWARD;
+            else if (gripperPitchTracking == gripperPitchPos.GRAB) {
+                gripperPitchTracking = gripperPitchPos.BACKWARD;
+            }
 
         }
         if (gamepad.y && gripperTimer.milliseconds() > 200) {
@@ -433,11 +439,13 @@ public class MainDriveOpmode extends OpMode{
         else if (gripperPitchTracking == gripperPitchPos.MIDDLE)
             robotCoreCustom.setGripperPitch(0.8); //0.7
         else if (gripperPitchTracking == gripperPitchPos.BACKWARD)
-            robotCoreCustom.setGripperPitch(0.3); // 0.3
+            robotCoreCustom.setGripperPitch(0.25); // 0.3
         else if (gripperPitchTracking == gripperPitchPos.FULLBACK)
             robotCoreCustom.setGripperPitch(0.0);
         else if (gripperPitchTracking == gripperPitchPos.UP)
             robotCoreCustom.setGripperPitch(0.6);
+        else if (gripperPitchTracking == gripperPitchPos.GRAB)
+            robotCoreCustom.setGripperPitch(0.4);
 
 
         if (gripperTracking == gripperPos.OPEN) robotCoreCustom.setGripper(0.65);
@@ -507,15 +515,15 @@ public class MainDriveOpmode extends OpMode{
     }
     public void cameraRotationUpdate() throws Exception {
         double datapoint = cameraCoreCustom.getComputedAngle();
+        if (rotationDataProcessor.dataPoints.isEmpty()) rotationDataProcessor.addDataPoint(0, datapointAge.milliseconds());
         if (datapoint != 0) {
             rotationDataProcessor.addDataPoint((Math.abs(datapoint) + 40), datapointAge.milliseconds());
         }
         rotationDataProcessor.removeOldDataPoints(15);
-        if (cameraStateTracking == cameraState.SEARCHING && gripperRotationStateTracking == gripperRotationState.AUTO) {
+        if (cameraStateTracking == cameraState.SEARCHING && gripperRotationStateTracking == gripperRotationState.AUTO && rotationDataProcessor.dataPoints.size() > 10) {
             gripperRotationPosTarget = (Math.abs(rotationDataProcessor.getAverage()) * ((double) 1/1800) + 0.5);
         }
         if (rotationDataProcessor.dataPoints.size() < 5) {
-            gripperRotationPosTarget = 0.5;
             gripperRotationStateTracking = gripperRotationState.MANUAL;
         }
     }
