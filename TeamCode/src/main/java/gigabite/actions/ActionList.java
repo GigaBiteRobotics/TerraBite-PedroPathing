@@ -1,19 +1,18 @@
+package gigabite.actions;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import gigabite.actions.Action;
-import gigabite.actions.ActionContext;
-
 public class ActionList extends Action {
     // holds our list of actions and the current action.
-    private ArrayList<Action> actions_ = null;
+    private ArrayList<Action> actions_;
     private Iterator<Action> actionIt_ = null;
     private Action current_ = null;
 
     // constructor
     public ActionList(String name) {
         super(name);
-        actions_ = new ArrayList<Action>();
+        actions_ = new ArrayList<>();
     }
 
     // action functions
@@ -63,9 +62,18 @@ public class ActionList extends Action {
         return s;
     }
 
-    ActionList add(Action a) {
+    public ActionList add(Action a) {
         actions_.add(a);
         return this;
+    }
+
+    public Action pop() {
+        Action a = null;
+        if(!actions_.isEmpty()) {
+            a = actions_.get(0);
+            actions_.remove(0);
+        }
+        return a;
     }
 
 }

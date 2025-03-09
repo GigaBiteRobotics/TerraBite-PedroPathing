@@ -1,33 +1,54 @@
 package gigabite.robot;
 
-import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.util.ArrayList;
+
 import gigabite.actions.Action;
+import gigabite.actions.ActionList;
 import gigabite.actions.ActionContext;
 
 // base class for all robots
 // Basic Idea : Robots perform Actions.
 public class Robot {
     // member variables
-    protected Action action_ = null;
-    protected ActionContext actionContext_ = null;
+    protected Action action_; // current action
+    protected ActionList actions_; // list of actions to execute.
+    protected ActionContext actionContext_;
+    protected RobotContext context_;
 
-    public Robot() {
+    // list of human operated drivers
+    protected ArrayList<Driver> drivers_;
+
+    public Robot(RobotContext c) {
+        context_ = c;
         actionContext_ = new ActionContext();
-        actionContext_.elapsedTime = new ElapsedTime();
+        actionContext_.elapsedTime = c.elapsedTime;
+        actions_ = new ActionList("actions");
+        drivers_ = new ArrayList<Driver>();
     }
 
-    // inteface
+    public RobotContext Context() {
+        return context_;
+    }
+
+    // interface
     //update the robot
     public void update() {
+        // update human drivers first, then actions, so that behaviors can override human input
+        for (Driver d: drivers_) {
+            d.update();
+        }
         if(action_ != null) {
             if(action_.update(actionContext_) != Action.Status.Continue) {
                 stopAction();
             }
+        } else {
+            action_ = actions_.pop();
         }
     }
 
     // start running this action
-    public void runAction(Action a) {
+    private void runAction(Action a) {
         action_ = a;
         if(action_.start(actionContext_) == Action.Status.Failed) {
             // TODO: report failure
@@ -36,7 +57,7 @@ public class Robot {
     }
 
     // stop running the current action
-    public void stopAction() {
+    private void stopAction() {
         if (action_ != null) {
             if(action_.stop(actionContext_) == Action.Status.Failed) {
                 // TODO: report failure
@@ -46,5 +67,12 @@ public class Robot {
     // query the current action
     public Action currentAction() {
         return action_;
+    }
+
+    public void addAction(Action a) {
+        actions_.add(a);
+    }
+    public void AddDriver(Driver d) {
+        drivers_.add(d);
     }
 }
