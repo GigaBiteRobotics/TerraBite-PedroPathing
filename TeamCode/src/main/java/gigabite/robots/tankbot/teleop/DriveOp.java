@@ -7,7 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import gigabite.robots.tankbot.TankRobot;
-import gigabite.robots.tankbot.MoveDriver;
+import gigabite.robots.tankbot.TankDriver;
+import gigabite.robots.tankbot.PovDriver;
 import gigabite.robot.RobotContext;
 
 
@@ -21,7 +22,9 @@ public class DriveOp extends OpMode {
     public void init() {
         context = new RobotContext(this);
         robot = new TankRobot(context);
-        robot.AddDriver(new MoveDriver(context));
+        // choose a pov or tank driver for human control
+        // robot.AddDriver(new TankDriver(context));
+        robot.AddDriver(new PovDriver(context));
     }
 
     @Override

@@ -51,7 +51,7 @@ public class Robot {
     private void runAction(Action a) {
         action_ = a;
         if(action_.start(actionContext_) == Action.Status.Failed) {
-            // TODO: report failure
+            context_.opMode.telemetry.log().add("failure START action {}", action_.name());
             stopAction();
         }
     }
@@ -60,7 +60,7 @@ public class Robot {
     private void stopAction() {
         if (action_ != null) {
             if(action_.stop(actionContext_) == Action.Status.Failed) {
-                // TODO: report failure
+                context_.opMode.telemetry.log().add("failure STOP action {}", action_.name());
             }
         }
     }
