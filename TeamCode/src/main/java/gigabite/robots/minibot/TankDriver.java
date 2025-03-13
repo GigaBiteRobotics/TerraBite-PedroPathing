@@ -1,15 +1,15 @@
-package gigabite.robots.tankbot;
+package gigabite.robots.minibot;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.util.Range;
 
 import gigabite.robot.Driver;
 import gigabite.robot.RobotContext;
 
-public class PovDriver extends Driver {
+public class TankDriver extends Driver {
+
     final private DcMotor leftDrive;
     final private DcMotor rightDrive;
-    public PovDriver(RobotContext context) {
+    public TankDriver(RobotContext context) {
         super(context);
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -30,18 +30,16 @@ public class PovDriver extends Driver {
         double leftPower;
         double rightPower;
 
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -context.opMode.gamepad1.left_stick_y;
-        double turn  =  context.opMode.gamepad1.right_stick_x;
-        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+        // Tank Mode uses one stick to control each wheel.
+        // - This requires no math, but it is hard to drive forward slowly and keep straight.
+        leftPower = -context.opMode.gamepad1.left_stick_y;
+        rightPower = -context.opMode.gamepad1.right_stick_y;
 
         // Send calculated power to wheels
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
 
-        // Show the elapsed game time and wheel power.
+        // display wheel power
         context.opMode.telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
 }

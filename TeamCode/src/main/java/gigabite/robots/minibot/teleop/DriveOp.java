@@ -1,4 +1,4 @@
-package gigabite.robots.tankbot.teleop;
+package gigabite.robots.minibot.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -6,22 +6,23 @@ import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import gigabite.robots.tankbot.TankRobot;
-import gigabite.robots.tankbot.TankDriver;
-import gigabite.robots.tankbot.PovDriver;
+import gigabite.robot.Robot;
+import gigabite.robots.minibot.MiniBot;
+import gigabite.robots.minibot.TankDriver;
+import gigabite.robots.minibot.PovDriver;
 import gigabite.robot.RobotContext;
 
 
 @TeleOp(name = "TankBot.Drive", group = "Linear OpMode")
 @Disabled
 public class DriveOp extends OpMode {
-    TankRobot robot = null;
+    Robot robot = null;
     RobotContext context = null;
 
     @Override
     public void init() {
         context = new RobotContext(this);
-        robot = new TankRobot(context);
+        robot = new MiniBot(context);
         // choose a pov or tank driver for human control
         // robot.AddDriver(new TankDriver(context));
         robot.AddDriver(new PovDriver(context));
