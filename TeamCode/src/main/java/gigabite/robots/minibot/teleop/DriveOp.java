@@ -14,7 +14,7 @@ import gigabite.robot.RobotContext;
 
 
 @TeleOp(name = "TankBot.Drive", group = "Linear OpMode")
-// @Disabled
+@Disabled
 public class DriveOp extends OpMode {
     Robot robot = null;
     RobotContext context = null;
