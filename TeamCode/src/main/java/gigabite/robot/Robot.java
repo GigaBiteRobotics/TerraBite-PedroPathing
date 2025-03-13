@@ -65,14 +65,15 @@ public class Robot {
         }
     }
     // query the current action
-    public Action currentAction() {
+    public Action CurrentAction() {
         return action_;
     }
 
-    public void addAction(Action a) {
+    public void AddAction(Action a) {
         actions_.add(a);
     }
     public void AddDriver(Driver d) {
         drivers_.add(d);
     }
+    public void ClearDrivers() { drivers_.clear();}
 }

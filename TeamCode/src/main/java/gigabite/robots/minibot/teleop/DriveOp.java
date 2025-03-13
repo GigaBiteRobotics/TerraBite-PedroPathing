@@ -14,7 +14,7 @@ import gigabite.robot.RobotContext;
 
 
 @TeleOp(name = "TankBot.Drive", group = "Linear OpMode")
-@Disabled
+// @Disabled
 public class DriveOp extends OpMode {
     Robot robot = null;
     RobotContext context = null;
@@ -40,5 +40,15 @@ public class DriveOp extends OpMode {
     @Override
     public void loop() {
         robot.update();
+
+        // select a different drive mode
+        if(context.opMode.gamepad1.dpad_up) {
+            robot.ClearDrivers();
+            robot.AddDriver(new PovDriver(context));
+        }
+        if(context.opMode.gamepad1.dpad_down) {
+            robot.ClearDrivers();
+            robot.AddDriver(new TankDriver(context));
+        }
     }
 }

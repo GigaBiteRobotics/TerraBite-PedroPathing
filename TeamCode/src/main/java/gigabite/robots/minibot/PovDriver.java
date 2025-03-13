@@ -42,6 +42,6 @@ public class PovDriver extends Driver {
         rightDrive.setPower(rightPower);
 
         // Show the elapsed game time and wheel power.
-        context.opMode.telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        context.opMode.telemetry.addData("POV Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
 }

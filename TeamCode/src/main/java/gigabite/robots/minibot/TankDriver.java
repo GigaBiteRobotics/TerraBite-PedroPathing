@@ -40,6 +40,6 @@ public class TankDriver extends Driver {
         rightDrive.setPower(rightPower);
 
         // display wheel power
-        context.opMode.telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+        context.opMode.telemetry.addData("TANK Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
 }
