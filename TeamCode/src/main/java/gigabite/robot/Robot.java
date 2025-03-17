@@ -23,6 +23,7 @@ public class Robot {
         context_ = c;
         actionContext_ = new ActionContext();
         actionContext_.elapsedTime = c.elapsedTime;
+        actionContext_.robot = this;
         actions_ = new ActionList("actions");
         drivers_ = new ArrayList<Driver>();
     }
@@ -34,25 +35,33 @@ public class Robot {
     // interface
     //update the robot
     public void update() {
-        // update human drivers first, then actions, so that behaviors can override human input
-        for (Driver d: drivers_) {
-            d.update();
+
+        // update human input if no action to run.
+        if (action_ == null) {
+            for (Driver d: drivers_) {
+                d.update();
+            }
         }
+        // if we have an action, run those.
         if(action_ != null) {
+            context_.opMode.telemetry.addData("Action", "Action: %s, Time %f", action_.name(), action_.Timer().time());
             if(action_.update(actionContext_) != Action.Status.Continue) {
                 stopAction();
             }
         } else {
-            action_ = actions_.pop();
+            // try to run an action by popping one of the queue
+            runAction(actions_.pop());
         }
     }
 
     // start running this action
     private void runAction(Action a) {
         action_ = a;
-        if(action_.start(actionContext_) == Action.Status.Failed) {
-            context_.opMode.telemetry.log().add("failure START action {}", action_.name());
-            stopAction();
+        if(action_ != null) {
+            if(action_.start(actionContext_) == Action.Status.Failed) {
+                context_.opMode.telemetry.log().add("failure START action {}", action_.name());
+                stopAction();
+            }
         }
     }
 
@@ -62,6 +71,7 @@ public class Robot {
             if(action_.stop(actionContext_) == Action.Status.Failed) {
                 context_.opMode.telemetry.log().add("failure STOP action {}", action_.name());
             }
+            action_ = null;
         }
     }
     // query the current action
