@@ -3,19 +3,20 @@ package gigabite.robots.minibot.actions;
 import com.qualcomm.robotcore.util.Range;
 
 import gigabite.actions.Action;
+import gigabite.actions.WaitAction;
 import gigabite.actions.ActionContext;
 
 import gigabite.robots.minibot.MiniBot;
 
 // Makes the robot move in a snake like fashion
-public class SnakeAction extends Action {
+public class SnakeAction extends WaitAction {
 
     protected double duration_;
     protected double power_;
     protected double period_;
 
     public SnakeAction(String name, double seconds, double period, double power) {
-        super(name);
+        super(name, seconds);
         duration_ = seconds;
         period_ = period;
         power_ = power;
@@ -37,7 +38,6 @@ public class SnakeAction extends Action {
 
     @Override
     public Status update(ActionContext context) {
-        super.update(context);
         MiniBot robot = (MiniBot)context.robot;
         double leftDrive = Math.sin(seconds() * period_) * power_;
         double rightDrive = -leftDrive;
@@ -46,9 +46,6 @@ public class SnakeAction extends Action {
         robot.Context().opMode.telemetry.addData("Snake", " {%f} {%f}", leftDrive, rightDrive);
         robot.setLeftDrive(leftDrive);
         robot.setRightDrive(rightDrive);
-        if (Timer().time() < duration_) {
-            return Status.Continue;
-        }
-        return Status.Success;
+        return super.update(context);
     }
 }

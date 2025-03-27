@@ -2,6 +2,8 @@ package gigabite.actions;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.Optional;
+
 public class Action {
 
     private ElapsedTime timer_ = null;
@@ -44,6 +46,7 @@ public class Action {
 
     // call update() as long as it returns Continue
     public Status update(ActionContext context) {
+        context.robot.Context().opMode.telemetry.addData("Action", "Action: %s, Time %f", name(), seconds());
         return Status.Success;
     }
 }

@@ -44,7 +44,6 @@ public class Robot {
         }
         // if we have an action, run those.
         if(action_ != null) {
-            context_.opMode.telemetry.addData("Action", "Action: %s, Time %f", action_.name(), action_.Timer().time());
             if(action_.update(actionContext_) != Action.Status.Continue) {
                 stopAction();
             }

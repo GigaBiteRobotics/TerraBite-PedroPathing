@@ -2,11 +2,11 @@ package gigabite.actions;
 
 // an action that waits for a specific amount of time
 public class WaitAction extends Action{
-private final double msToWait_;
+private final double seconds_;
 
-public WaitAction(String name, double ms) {
+public WaitAction(String name, double seconds) {
     super(name);
-    msToWait_ = ms;
+    seconds_ = seconds;
 }
 
 public Status start(ActionContext context) {
@@ -18,7 +18,8 @@ public Status stop( ActionContext context) {
 }
 
 public Status update(ActionContext context) {
-    if( milliseconds() < msToWait_) {
+    super.update(context);
+    if( seconds() < seconds_) {
         return Status.Continue;
     }
     return Status.Success;

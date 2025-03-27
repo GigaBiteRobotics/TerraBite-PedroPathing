@@ -17,8 +17,8 @@ import gigabite.robots.minibot.actions.SnakeAction;
 import gigabite.robots.minibot.actions.TurnAction;
 
 
-@TeleOp(name = "TankBot.Drive", group = "Linear OpMode")
-@Disabled
+@TeleOp(name = "MiniBot.Drive", group = "Linear OpMode")
+// @Disabled
 public class DriveOp extends OpMode {
     RobotContext context = null;
 

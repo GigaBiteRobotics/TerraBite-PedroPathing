@@ -9,6 +9,7 @@ public class OrAction extends Action{
 
     public OrAction(String name) {
         super(name);
+        actions_ = new ArrayList<>();
     }
 
     public Status start(ActionContext context) {
@@ -34,7 +35,7 @@ public class OrAction extends Action{
         // in order to continue, only one must continue
         Status rv = Status.Success;
         for( Action a : actions_) {
-            Status s = a.stop(context);
+            Status s = a.update(context);
             if (s == Status.Continue) {
                 rv = Status.Continue;
             }

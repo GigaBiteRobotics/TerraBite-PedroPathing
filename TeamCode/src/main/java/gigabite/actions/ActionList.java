@@ -5,7 +5,7 @@ import java.util.Iterator;
 
 public class ActionList extends Action {
     // holds our list of actions and the current action.
-    private ArrayList<Action> actions_;
+    private ArrayList<Action> actions_ = null;
     private Iterator<Action> actionIt_ = null;
     private Action current_ = null;
 
