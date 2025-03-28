@@ -13,6 +13,7 @@ public class OrAction extends Action{
     }
 
     public Status start(ActionContext context) {
+        super.start(context);
         for( Action a : actions_) {
             Status s = a.start(context);
             if (s == Status.Failed) {
@@ -22,6 +23,7 @@ public class OrAction extends Action{
         return Status.Success;
     }
     public Status stop(ActionContext context) {
+        super.stop(context);
         for( Action a : actions_) {
             Status s = a.stop(context);
             if (s == Status.Failed) {
@@ -32,6 +34,7 @@ public class OrAction extends Action{
     }
 
     public Status update(ActionContext context) {
+        super.update(context);
         // in order to continue, only one must continue
         Status rv = Status.Success;
         for( Action a : actions_) {

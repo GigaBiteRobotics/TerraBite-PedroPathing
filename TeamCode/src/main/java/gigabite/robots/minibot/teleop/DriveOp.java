@@ -13,6 +13,7 @@ import gigabite.robots.minibot.MiniBot;
 import gigabite.robots.minibot.TankDriver;
 import gigabite.robots.minibot.PovDriver;
 import gigabite.robot.RobotContext;
+import gigabite.robots.minibot.actions.DanceAction;
 import gigabite.robots.minibot.actions.SnakeAction;
 import gigabite.robots.minibot.actions.TurnAction;
 
@@ -63,6 +64,9 @@ public class DriveOp extends OpMode {
         }
         if(context.opMode.gamepad1.square && context.robot.CurrentAction() == null) {
             context.robot.AddAction( new SnakeAction("Snake", 5.0, 4.0, 1.0));
+        }
+        if(context.opMode.gamepad1.triangle && context.robot.CurrentAction() == null) {
+            context.robot.AddAction( new DanceAction("Raygun"));
         }
     }
 }

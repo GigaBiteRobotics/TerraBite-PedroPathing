@@ -10,10 +10,12 @@ public WaitAction(String name, double seconds) {
 }
 
 public Status start(ActionContext context) {
+    super.start(context);
     return Status.Success;
 
 }
 public Status stop( ActionContext context) {
+    super.stop(context);
     return Status.Success;
 }
 
