@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class RobotCoreCustom {
+public class RobotCoreCustomOLD {
     // Variables and instances for inverse kinematics and motor control
     InverseKinematics2D inverseKinematics2D = new InverseKinematics2D(0, 0, 0, 10000, 0);
     public MotorController motorControllerExt0 = new MotorController();

@@ -15,7 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-import drive.RobotCoreCustom;
+import drive.RobotCoreCustomOLD;
 import drive.opmode.MainDriveOpmode;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -25,7 +25,7 @@ public class PedroLocalizationTest extends OpMode {
     private DashboardPoseTracker dashboardPoseTracker;
     private Follower follower;
     private Telemetry telemetryA;
-    private RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
+    private RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
     double[] targetArmPos = {0, 0}; // Arm position: {rotation, extension}
     double[] targetArmVel = {0, 0}; // Arm velocity: {rotation, extension}
     ElapsedTime gamePadPollingRate = new ElapsedTime();
@@ -84,7 +84,7 @@ public class PedroLocalizationTest extends OpMode {
     }
     public void updateArmLimits() {
         // Extension limits
-        if (robotCoreCustom.extHomingState != RobotCoreCustom.HomingState.HOMING) {
+        if (robotCoreCustom.extHomingState != RobotCoreCustomOLD.HomingState.HOMING) {
             if (targetArmPos[1] > robotCoreCustom.getMaxLength(targetArmPos[0])) {
                 canExtend = false;
                 targetArmPos[1] = robotCoreCustom.getMaxLength(targetArmPos[0]);
@@ -99,7 +99,7 @@ public class PedroLocalizationTest extends OpMode {
         } else targetArmPos[1] = 0;
 
         // Rotation limits
-        if (robotCoreCustom.rotHomingState != RobotCoreCustom.HomingState.HOMING) {
+        if (robotCoreCustom.rotHomingState != RobotCoreCustomOLD.HomingState.HOMING) {
             if (targetArmPos[0] > 4000) {
                 canTurnPositive = false;
                 targetArmPos[0] = 4000;

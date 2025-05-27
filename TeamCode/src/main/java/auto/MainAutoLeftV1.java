@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import drive.PersistentStorage;
-import drive.RobotCoreCustom;
+import drive.RobotCoreCustomOLD;
 import drive.opmode.MainDriveOpmode;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -21,7 +21,7 @@ import pedroPathing.constants.LConstants;
 public class MainAutoLeftV1 extends OpMode {
 
 	private Follower follower;
-	private final RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
+	private final RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
 	private int pathState; // Tracks the current state of the autonomous routine
 
 	// Define poses

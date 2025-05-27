@@ -1,7 +1,5 @@
 package drive.opmode;
 
-import android.annotation.SuppressLint;
-
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -16,17 +14,16 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.opencv.osgi.OpenCVNativeLoader;
 
 import drive.CameraCoreCustom;
-import drive.RobotCoreCustom;
+import drive.RobotCoreCustomOLD;
 import drive.RotationDataProcessorCustom;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @TeleOp(name="TerraBiteDrive V1", group="!advanced")
 public class MainDriveOpmode extends OpMode{
-    RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
+    RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
     RotationDataProcessorCustom rotationDataProcessor = new RotationDataProcessorCustom(1000);
     CameraCoreCustom cameraCoreCustom = new CameraCoreCustom();
     double[] targetArmPos = {0, 0}; // Arm position: {rotation, extension}
@@ -168,14 +165,14 @@ public class MainDriveOpmode extends OpMode{
         if (gamepad2.dpad_right) {
             robotCoreCustom.homeRot();
         }
-        if (robotCoreCustom.rotHomingState == RobotCoreCustom.HomingState.SUCCESS) {
+        if (robotCoreCustom.rotHomingState == RobotCoreCustomOLD.HomingState.SUCCESS) {
             robotCoreCustom.homeExt();
             targetArmPos[1] = 50;
-            robotCoreCustom.rotHomingState = RobotCoreCustom.HomingState.IDLE;
+            robotCoreCustom.rotHomingState = RobotCoreCustomOLD.HomingState.IDLE;
         }
-        if (robotCoreCustom.extHomingState == RobotCoreCustom.HomingState.SUCCESS) {
+        if (robotCoreCustom.extHomingState == RobotCoreCustomOLD.HomingState.SUCCESS) {
             gripperPitchTracking = gripperPitchPos.FORWARD;
-            robotCoreCustom.extHomingState = RobotCoreCustom.HomingState.IDLE;
+            robotCoreCustom.extHomingState = RobotCoreCustomOLD.HomingState.IDLE;
             targetArmPos[0] = 240;
             targetArmPos[1] = 250;
         }
@@ -470,7 +467,7 @@ public class MainDriveOpmode extends OpMode{
     // Updates arm limits based on position and homing state
     public void updateArmLimits() {
         // Extension limits
-        if (robotCoreCustom.extHomingState != RobotCoreCustom.HomingState.HOMING) {
+        if (robotCoreCustom.extHomingState != RobotCoreCustomOLD.HomingState.HOMING) {
             if (targetArmPos[1] > robotCoreCustom.getMaxLength(targetArmPos[0])) {
                 canExtend = false;
                 targetArmPos[1] = robotCoreCustom.getMaxLength(targetArmPos[0]);
@@ -485,7 +482,7 @@ public class MainDriveOpmode extends OpMode{
         } else targetArmPos[1] = 0;
 
         // Rotation limits
-        if (robotCoreCustom.rotHomingState != RobotCoreCustom.HomingState.HOMING) {
+        if (robotCoreCustom.rotHomingState != RobotCoreCustomOLD.HomingState.HOMING) {
             if (targetArmPos[0] > 4000) {
                 canTurnPositive = false;
                 targetArmPos[0] = 4000;

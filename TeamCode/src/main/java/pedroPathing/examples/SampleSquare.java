@@ -2,19 +2,16 @@ package pedroPathing.examples;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
-import com.pedropathing.pathgen.BezierCurve;
 import com.pedropathing.pathgen.BezierLine;
-import com.pedropathing.pathgen.Path;
 import com.pedropathing.pathgen.PathChain;
 import com.pedropathing.pathgen.Point;
 import com.pedropathing.util.Constants;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import drive.RobotCoreCustom;
+import drive.RobotCoreCustomOLD;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -28,7 +25,7 @@ public class SampleSquare extends OpMode{
     private final Pose pose1 = new Pose(120, 120, Math.toRadians(270));
     private final Pose pose2 = new Pose(120, 72, Math.toRadians(0));
     private PathChain line0chain, line1chain, line2chain, line3chain, endPathChain;
-    private RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
+    private RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
     public int pathState = 0;
     private boolean isRunning = false;
     private ElapsedTime endPathCentering = new ElapsedTime();

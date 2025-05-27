@@ -12,11 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import java.nio.channels.Pipe;
-import java.util.MissingFormatArgumentException;
-
 import drive.PersistentStorage;
-import drive.RobotCoreCustom;
+import drive.RobotCoreCustomOLD;
 import drive.opmode.MainDriveOpmode;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
@@ -25,7 +22,7 @@ import pedroPathing.constants.LConstants;
 public class MainAutoRightV3 extends OpMode {
 
 	private Follower follower;
-	private final RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
+	private final RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
 	private int pathState; // Tracks the current state of the autonomous routine
 
 	// Define poses
@@ -359,13 +356,13 @@ public class MainAutoRightV3 extends OpMode {
 	@Override
 	public void init_loop() {
 		robotCoreCustom.updateAll();
-		if (robotCoreCustom.rotHomingState == RobotCoreCustom.HomingState.SUCCESS) {
+		if (robotCoreCustom.rotHomingState == RobotCoreCustomOLD.HomingState.SUCCESS) {
 			robotCoreCustom.homeExt();
 			targetArmPos[1] = 50;
-			robotCoreCustom.rotHomingState = RobotCoreCustom.HomingState.IDLE;
+			robotCoreCustom.rotHomingState = RobotCoreCustomOLD.HomingState.IDLE;
 		}
-		if (robotCoreCustom.extHomingState == RobotCoreCustom.HomingState.SUCCESS) {
-			robotCoreCustom.extHomingState = RobotCoreCustom.HomingState.IDLE;
+		if (robotCoreCustom.extHomingState == RobotCoreCustomOLD.HomingState.SUCCESS) {
+			robotCoreCustom.extHomingState = RobotCoreCustomOLD.HomingState.IDLE;
 			targetArmPos[0] = 440;
 			targetArmPos[1] = 250;
 			robotCoreCustom.setArmPos(targetArmPos);
