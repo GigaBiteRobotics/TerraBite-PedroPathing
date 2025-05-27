@@ -21,7 +21,7 @@ class MoveAction extends Action {
     }
 
     public Status start(ActionContext context) {
-
+        super.start(context);
         // construct a path from the followers current pose
         // to our target stop pose.
         startPose_ = context.follower.getPose();
@@ -35,6 +35,7 @@ class MoveAction extends Action {
 
     // cleanup exiting the action.
     public Status stop(ActionContext context) {
+        super.stop(context);
         path_ = null;
         startPose_ = null;
         //todo: maybe tell follower to stop following our path?
@@ -42,7 +43,7 @@ class MoveAction extends Action {
     }
 
     public Status update(ActionContext context) {
-
+        super.update(context);
         // fail if for some reason, we are not following
         // this actions path.
         if(context.follower.getCurrentPath() != path_) {
