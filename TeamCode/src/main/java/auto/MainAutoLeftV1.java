@@ -13,7 +13,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import drive.PersistentStorage;
 import drive.RobotCoreCustomOLD;
-import drive.opmode.MainDriveOpmode;
+import drive.opmode.MainDriveOpmodeOLD;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -41,8 +41,8 @@ public class MainAutoLeftV1 extends OpMode {
 	private GoBildaPinpointDriver odo;
 	private final ElapsedTime pathTimer = new ElapsedTime();
 	private final ElapsedTime elapsedTime = new ElapsedTime();
-	MainDriveOpmode.gripperPos gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
-	MainDriveOpmode.gripperPitchPos gripperPitchTracking = MainDriveOpmode.gripperPitchPos.FORWARD;
+	MainDriveOpmodeOLD.gripperPos gripperTracking = MainDriveOpmodeOLD.gripperPos.CLOSE;
+	MainDriveOpmodeOLD.gripperPitchPos gripperPitchTracking = MainDriveOpmodeOLD.gripperPitchPos.FORWARD;
 	ElapsedTime gripperTimer;
 	int[] targetArmPos = {70, 20};
 	int[] armDownPos = {180, 1800};
@@ -139,7 +139,7 @@ public class MainAutoLeftV1 extends OpMode {
 					pathState = 2;
 					armState = 0;
 					targetArmPos = armDownPos;
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+					gripperTracking = MainDriveOpmodeOLD.gripperPos.OPEN;
 					robotCoreCustom.gripperPitch.setPosition(0.15);
 					targetArmPos = armDownPos;
 				}
@@ -156,7 +156,7 @@ public class MainAutoLeftV1 extends OpMode {
 					follower.followPath(pc3,true);
 					pathState = 4;
 					armState = 0;
-					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+					gripperTracking = MainDriveOpmodeOLD.gripperPos.CLOSE;
 					targetArmPos = armUpPos;
 				}
 				break;
@@ -164,7 +164,7 @@ public class MainAutoLeftV1 extends OpMode {
 				if (robotCoreCustom.isPathFinished(follower, pose3)) {  // && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 2450 && robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 530 && armState == 0) {
 					armState = 1;
 
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+					gripperTracking = MainDriveOpmodeOLD.gripperPos.OPEN;
 					robotCoreCustom.gripperPitch.setPosition(0.6);
 					follower.followPath(pc4, true);
 					elapsedTime.reset();
@@ -175,14 +175,14 @@ public class MainAutoLeftV1 extends OpMode {
 					follower.followPath(pc5, true);
 					pathState = 6;
 					armState = 0;
-					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+					gripperTracking = MainDriveOpmodeOLD.gripperPos.CLOSE;
 					targetArmPos = armUpPos;
 				}
 				break;
 			case 6:
 				if (robotCoreCustom.isPathFinished(follower, pose5) && robotCoreCustom.motorControllerRot.motor.getCurrentPosition() > 2450 && robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 530 && armState == 0) {
 					armState = 1;
-					gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
+					gripperTracking = MainDriveOpmodeOLD.gripperPos.CLOSE;
 					robotCoreCustom.gripperPitch.setPosition(0.6);
 					elapsedTime.reset();
 				}
@@ -192,7 +192,7 @@ public class MainAutoLeftV1 extends OpMode {
 					pathState = 7;
 					targetArmPos = armDownPos;
 					robotCoreCustom.gripperPitch.setPosition(0.15);
-					gripperTracking = MainDriveOpmode.gripperPos.OPEN;
+					gripperTracking = MainDriveOpmodeOLD.gripperPos.OPEN;
 				}
 				break;
 			default:
@@ -255,7 +255,7 @@ public class MainAutoLeftV1 extends OpMode {
          */
 
 		robotCoreCustom.setGripper(
-				(gripperTracking == MainDriveOpmode.gripperPos.OPEN) ? 0.25 : 0.47   // Adjust positions for open/close
+				(gripperTracking == MainDriveOpmodeOLD.gripperPos.OPEN) ? 0.25 : 0.47   // Adjust positions for open/close
 		);
 	}
 

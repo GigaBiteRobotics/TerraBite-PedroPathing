@@ -16,7 +16,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import drive.RobotCoreCustomOLD;
-import drive.opmode.MainDriveOpmode;
+import drive.opmode.MainDriveOpmodeOLD;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
@@ -42,9 +42,9 @@ public class PedroLocalizationTest extends OpMode {
         NA,
         VEL
     }
-    MainDriveOpmode.PosWait downPosTracking;
-    MainDriveOpmode.PosWait upPosTracking;
-    MainDriveOpmode.targetSetPos targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+    MainDriveOpmodeOLD.PosWait downPosTracking;
+    MainDriveOpmodeOLD.PosWait upPosTracking;
+    MainDriveOpmodeOLD.targetSetPos targetSetPosTracking = MainDriveOpmodeOLD.targetSetPos.NA;
 
 
     @Override
@@ -110,16 +110,16 @@ public class PedroLocalizationTest extends OpMode {
                 targetArmPos[0] = 20;
             } else canTurnNegative = true;
 
-            if (targetSetPosTracking == MainDriveOpmode.targetSetPos.UP && upPosTracking == MainDriveOpmode.PosWait.GO || upPosTracking == MainDriveOpmode.PosWait.WAIT1 || upPosTracking == MainDriveOpmode.PosWait.WAIT) {
+            if (targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.UP && upPosTracking == MainDriveOpmodeOLD.PosWait.GO || upPosTracking == MainDriveOpmodeOLD.PosWait.WAIT1 || upPosTracking == MainDriveOpmodeOLD.PosWait.WAIT) {
                 robotCoreCustom.setArmRotPos(targetArmPos[0], 1);
             }
-            if (targetSetPosTracking == MainDriveOpmode.targetSetPos.DOWN && downPosTracking == MainDriveOpmode.PosWait.GO || downPosTracking == MainDriveOpmode.PosWait.WAIT1 || downPosTracking == MainDriveOpmode.PosWait.WAIT) {
+            if (targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.DOWN && downPosTracking == MainDriveOpmodeOLD.PosWait.GO || downPosTracking == MainDriveOpmodeOLD.PosWait.WAIT1 || downPosTracking == MainDriveOpmodeOLD.PosWait.WAIT) {
                 robotCoreCustom.setArmRotPos(targetArmPos[0], 1);
             }
-            if (targetSetPosTracking == MainDriveOpmode.targetSetPos.NA) {
+            if (targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.NA) {
                 robotCoreCustom.setArmRotPos(targetArmPos[0], 1);
             }
-            if (targetSetPosTracking == MainDriveOpmode.targetSetPos.VEL) {
+            if (targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.VEL) {
                 robotCoreCustom.setArmRotVel(targetArmVel[0]);
             }
         }
@@ -127,10 +127,10 @@ public class PedroLocalizationTest extends OpMode {
     public void gamePadCont2DPos(Gamepad gamepad) {
         if (gamePadPollingRate.milliseconds() > pollingRateMS) {
             if (gamepad.left_stick_y < -0.2 || gamepad.left_stick_y > 0.2) {
-                targetSetPosTracking = MainDriveOpmode.targetSetPos.VEL;
+                targetSetPosTracking = MainDriveOpmodeOLD.targetSetPos.VEL;
                 robotCoreCustom.motorControllerRot.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            } else if(targetSetPosTracking == MainDriveOpmode.targetSetPos.VEL) {
-                targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+            } else if(targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.VEL) {
+                targetSetPosTracking = MainDriveOpmodeOLD.targetSetPos.NA;
                 robotCoreCustom.motorControllerRot.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 targetArmPos[0] = robotCoreCustom.motorControllerRot.motor.getCurrentPosition();
             }

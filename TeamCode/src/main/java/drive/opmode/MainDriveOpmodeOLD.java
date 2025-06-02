@@ -22,7 +22,7 @@ import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @TeleOp(name="TerraBiteDrive V1", group="!advanced")
-public class MainDriveOpmode extends OpMode{
+public class MainDriveOpmodeOLD extends OpMode{
     RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
     RotationDataProcessorCustom rotationDataProcessor = new RotationDataProcessorCustom(1000);
     CameraCoreCustom cameraCoreCustom = new CameraCoreCustom();
@@ -231,17 +231,17 @@ public class MainDriveOpmode extends OpMode{
             targetSetPosTracking = targetSetPos.UP;
             upPosTracking = PosWait.WAIT;
         }
-        if (upPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.UP) {
+        if (upPosTracking == MainDriveOpmodeOLD.PosWait.WAIT && targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.UP) {
             targetArmPos[0] = (int) (2250);
             targetArmPos[1] = (int) (0);
             gripperPitchTracking = gripperPitchPos.BACKWARD;
-            upPosTracking = MainDriveOpmode.PosWait.GO;
-            gripperTracking = MainDriveOpmode.gripperPos.LIGHT;
+            upPosTracking = MainDriveOpmodeOLD.PosWait.GO;
+            gripperTracking = MainDriveOpmodeOLD.gripperPos.LIGHT;
             gripperTimer.reset();
         }
-        if (upPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.UP && gripperTimer.milliseconds() > 750) {
-            gripperTracking = MainDriveOpmode.gripperPos.CLOSE;
-            targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+        if (upPosTracking == MainDriveOpmodeOLD.PosWait.GO && targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.UP && gripperTimer.milliseconds() > 750) {
+            gripperTracking = MainDriveOpmodeOLD.gripperPos.CLOSE;
+            targetSetPosTracking = MainDriveOpmodeOLD.targetSetPos.NA;
         }
 
         if (gamepad2.dpad_down && setPositionTypeTracking == setPositionType.RIGHT) {
@@ -269,23 +269,23 @@ public class MainDriveOpmode extends OpMode{
             targetSetPosTracking = targetSetPos.SCORE;
             downPosTracking = PosWait.WAIT;
         }
-        if (downPosTracking == MainDriveOpmode.PosWait.WAIT && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE) {
+        if (downPosTracking == MainDriveOpmodeOLD.PosWait.WAIT && targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.SCORE) {
             targetArmPos[0] = (int) (2510);
             targetArmPos[1] = (int) (-10);
             gripperPitchTracking = gripperPitchPos.UP;
             scoreTimer.reset();
             downPosTracking = PosWait.WAIT1;
         }
-        if (downPosTracking == MainDriveOpmode.PosWait.WAIT1 && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && scoreTimer.milliseconds() > 350) {
+        if (downPosTracking == MainDriveOpmodeOLD.PosWait.WAIT1 && targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.SCORE && scoreTimer.milliseconds() > 350) {
             targetArmPos[0] = (int) (1700);
             gripperTracking = gripperPos.LIGHT;
             scoreTimer.reset();
-            downPosTracking = MainDriveOpmode.PosWait.GO;
+            downPosTracking = MainDriveOpmodeOLD.PosWait.GO;
             scoreTimer.reset();
         }
-        if (downPosTracking == MainDriveOpmode.PosWait.GO && targetSetPosTracking == MainDriveOpmode.targetSetPos.SCORE && scoreTimer.milliseconds() > 500) {
-            gripperTracking = MainDriveOpmode.gripperPos.OPEN;
-            targetSetPosTracking = MainDriveOpmode.targetSetPos.NA;
+        if (downPosTracking == MainDriveOpmodeOLD.PosWait.GO && targetSetPosTracking == MainDriveOpmodeOLD.targetSetPos.SCORE && scoreTimer.milliseconds() > 500) {
+            gripperTracking = MainDriveOpmodeOLD.gripperPos.OPEN;
+            targetSetPosTracking = MainDriveOpmodeOLD.targetSetPos.NA;
         }
 
         if (gripperTimer.milliseconds() > 200 && gamepad2.x || gripperGrabSamplePos == 1 || gripperGrabSamplePos == 2 || gripperGrabSamplePos == 3) {
