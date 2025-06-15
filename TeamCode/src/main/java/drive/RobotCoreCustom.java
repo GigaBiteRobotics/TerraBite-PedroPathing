@@ -2,6 +2,7 @@ package drive;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.localization.Pose;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -17,11 +18,13 @@ public class RobotCoreCustom {
     public HomingState rotHomingState = HomingState.IDLE;
 	// Servo components for the gripper
     public Servo gripper, servoDiffLeft, servoDiffRight, servoWristRight, servoWristLeft;
+    CustomPIDFController pidfControllerExt = new CustomPIDFController(20, 1, 0.3, 0);
     // Enum for homing states
     public enum HomingState {
         IDLE,
         DOWN,
         UP,
+        SUCCESS
     }
 
     /**
@@ -30,10 +33,14 @@ public class RobotCoreCustom {
      */
     public void robotCoreInit(HardwareMap hardwareMap) {
         // Initialize motors
-        //motorControllerRot0.initializeMotor("armRot0", hardwareMap, false, false, null, false);
-        //motorControllerRot1.initializeMotor("armRot1", hardwareMap, false, false, null, false);
-        //motorControllerExt0.initializeMotor("armExt0", hardwareMap, false, false, null, true);
-        //motorControllerExt1.initializeMotor("armExt1", hardwareMap, false, false, null, true);
+        motorControllerRot0.initializeMotor("expM2", hardwareMap, false, true, null, false);
+        motorControllerRot1.initializeMotor("expM3", hardwareMap, false, false, null, false);
+        motorControllerExt0.initializeMotor("expM0", hardwareMap, false, false, null, false);
+        motorControllerExt1.initializeMotor("expM1", hardwareMap, false, false, null, false);
+        motorControllerRot0.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorControllerRot1.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorControllerExt0.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        motorControllerExt1.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Initialize servos
         servoDiffLeft = hardwareMap.get(Servo.class, "servoDiffLeft");
@@ -41,24 +48,26 @@ public class RobotCoreCustom {
         servoWristLeft = hardwareMap.get(Servo.class, "servoWristLeft");
         servoWristRight = hardwareMap.get(Servo.class, "servoWristRight");
         gripper = hardwareMap.get(Servo.class, "gripper");
+        rotHomingState = HomingState.IDLE;
+        extHomingState = HomingState.IDLE;
     }
     public void homeMotorExt() {
-        if (extHomingState == HomingState.IDLE) {
+        if (extHomingState == HomingState.IDLE || extHomingState == HomingState.SUCCESS) {
             extHomingState = HomingState.DOWN;
         }
     }
     public void homeMotorRot(HomingState direction) {
-        if (direction == HomingState.DOWN && rotHomingState == HomingState.IDLE) {
+        if (direction == HomingState.DOWN && (rotHomingState == HomingState.IDLE)) {
             rotHomingState = HomingState.DOWN;
-        } else if (direction == HomingState.UP && rotHomingState == HomingState.IDLE) {
+        } else if (direction == HomingState.UP && (rotHomingState == HomingState.IDLE)) {
             rotHomingState = HomingState.UP;
         }
     }
     public void homingUpdate() {
         if (extHomingState == HomingState.DOWN) {
-            if (motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS) > 5 || motorControllerExt1.motor.getCurrent(CurrentUnit.AMPS) > 5) {
+            if (motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS) > 8 || motorControllerExt1.motor.getCurrent(CurrentUnit.AMPS) > 8) {
                 // If the current is above a threshold, we assume the limit switch is pressed
-                extHomingState = HomingState.IDLE;
+                extHomingState = HomingState.SUCCESS;
                 motorControllerExt0.motor.setPower(0);
                 motorControllerExt1.motor.setPower(0);
             } else {
@@ -66,30 +75,39 @@ public class RobotCoreCustom {
                 motorControllerExt0.motor.setPower(-0.5);
                 motorControllerExt1.motor.setPower(-0.5);
             }
+
         }
         if (rotHomingState == HomingState.DOWN) {
-            if (motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 5 || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 5) {
+            if (motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 3 || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 3) {
                 // If the current is above a threshold, we assume the limit switch is pressed
                 rotHomingState = HomingState.IDLE;
                 motorControllerRot0.motor.setPower(0);
                 motorControllerRot1.motor.setPower(0);
             } else {
                 // Continue homing logic here, e.g., moving motors until limit switch is pressed
-                motorControllerRot0.motor.setPower(-0.5);
-                motorControllerRot1.motor.setPower(-0.5);
+                motorControllerRot0.motor.setPower(-1);
+                motorControllerRot1.motor.setPower(-1);
             }
         }
         if (rotHomingState == HomingState.UP) {
-            if (motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 5 || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 5) {
+            if (motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 4 || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 4) {
                 // If the current is above a threshold, we assume the limit switch is pressed
                 rotHomingState = HomingState.IDLE;
                 motorControllerRot0.motor.setPower(0);
                 motorControllerRot1.motor.setPower(0);
             } else {
                 // Continue homing logic here, e.g., moving motors until limit switch is pressed
-                motorControllerRot0.motor.setPower(0.5);
-                motorControllerRot1.motor.setPower(0.5);
+                motorControllerRot0.motor.setPower(1);
+                motorControllerRot1.motor.setPower(1);
             }
+        }
+    }
+
+    public void setExtPos(double position) {
+        if (extHomingState == HomingState.SUCCESS) {
+            double power = pidfControllerExt.calculate(position, motorControllerExt0.motor.getCurrentPosition(), 0, 10);
+            motorControllerExt0.motor.setPower(power);
+            motorControllerExt1.motor.setPower(power);
         }
     }
 

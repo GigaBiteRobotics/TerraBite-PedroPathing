@@ -26,6 +26,7 @@ public class CustomPIDFController {
 	 * @param targetPosition The desired encoder position.
 	 * @param currentPosition The current encoder position.
 	 * @param targetVelocity The desired feedforward velocity (ticks/sec). Use 0 if not required.
+	 * @param range The range within which the error is considered tolerable.
 	 * @return Calculated motor power (range: -1.0 to 1.0).
 	 */
 	public double calculate(double targetPosition, double currentPosition, double targetVelocity, double range) {
