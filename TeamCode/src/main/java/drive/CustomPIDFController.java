@@ -62,6 +62,6 @@ public class CustomPIDFController {
 		double output = pTerm + iTerm + dTerm + fTerm;
 
 		// Clamp output to valid motor power range
-		return Math.min(1, Math.max(output/5000, -1));
+		return Math.min(1, Math.max(output/5000, -1)); // Reverse logic if needed
 	}
 }

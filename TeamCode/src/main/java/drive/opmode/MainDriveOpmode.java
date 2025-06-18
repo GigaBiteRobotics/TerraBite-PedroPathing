@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import drive.CameraCoreCustom;
@@ -42,7 +43,7 @@ public class MainDriveOpmode extends OpMode {
     @Override
     public void start(){
         follower.startTeleopDrive();
-
+        robotCoreCustom.homeMotorExt();
     }
 
     @Override
@@ -59,14 +60,26 @@ public class MainDriveOpmode extends OpMode {
         }
         if (gamepad2.a) {
             robotCoreCustom.homeMotorExt();
+            extTargetPosition = 0; // Reset target position when homing
         }
+        if (gamepad2.b) {
+            extTargetPosition = 600; // Set target position to 300 when button B is pressed
+        }
+        if (gamepad2.x) {
+            extTargetPosition = 0; // Set target position to 0 when button X is pressed
+        }
+        robotCoreCustom.setExtPos(extTargetPosition);
         follower.update();
         telemetry.addData("extHomingState", robotCoreCustom.extHomingState);
         telemetry.addData("rotHomingState", robotCoreCustom.rotHomingState);
         telemetry.addData("Ext AMPS", robotCoreCustom.motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Ext Power", robotCoreCustom.motorControllerExt0.motor.getPower());
+        telemetry.addData("Rot Velocity", robotCoreCustom.motorControllerExt0.motor.getVelocity(AngleUnit.DEGREES));
         telemetry.addData("Rot AMPS", robotCoreCustom.motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("Rot Power", robotCoreCustom.motorControllerRot0.motor.getPower());
         telemetry.addData("Diff Pos", "X: %.2f, Y: %.2f", diffPos[0], diffPos[1]);
         telemetry.addData("Ext Target Position", extTargetPosition);
+        telemetry.addData("Ext Position", robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
         telemetry.update();
     }
 
@@ -86,8 +99,6 @@ public class MainDriveOpmode extends OpMode {
         diffPos[0] = Math.max(-1, Math.min(1, diffPos[0]));
         diffPos[1] = Math.max(-1, Math.min(1, diffPos[1]));
 
-        extTargetPosition += gamepad2.right_stick_y * -2; // Adjust the scaling factor as needed
-
-        robotCoreCustom.setExtPos(extTargetPosition); // Adjust the scaling factor as needed
+        extTargetPosition += gamepad2.right_stick_y * -5; // Adjust the scaling factor as needed
     }
 }
