@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RotationDataProcessorCustom {
+public class RotationDataProcessor {
 	public ArrayList<Double> dataPoints = new ArrayList<>();
 	public ArrayList<Double> dataPointAges = new ArrayList<>();
 	private static final double outlierThreshold = 1.5;
 	public int counter = 0;
-	public RotationDataProcessorCustom(double maxAge) {
+	public RotationDataProcessor(double maxAge) {
 	}
 
 	public void addDataPoint(double dataPoint, double datapointAge) {

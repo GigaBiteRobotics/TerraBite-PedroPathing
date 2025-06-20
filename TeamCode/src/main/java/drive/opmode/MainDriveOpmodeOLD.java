@@ -17,14 +17,14 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import drive.CameraCoreCustom;
 import drive.RobotCoreCustomOLD;
-import drive.RotationDataProcessorCustom;
+import drive.RotationDataProcessor;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
 @TeleOp(name="TerraBiteDrive V1", group="!advanced")
 public class MainDriveOpmodeOLD extends OpMode{
     RobotCoreCustomOLD robotCoreCustom = new RobotCoreCustomOLD();
-    RotationDataProcessorCustom rotationDataProcessor = new RotationDataProcessorCustom(1000);
+    RotationDataProcessor rotationDataProcessor = new RotationDataProcessor(1000);
     CameraCoreCustom cameraCoreCustom = new CameraCoreCustom();
     double[] targetArmPos = {0, 0}; // Arm position: {rotation, extension}
     double[] targetArmVel = {0, 0}; // Arm velocity: {rotation, extension}
