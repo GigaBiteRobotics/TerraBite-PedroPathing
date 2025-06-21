@@ -8,26 +8,41 @@ import com.pedropathing.util.Constants;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import drive.RobotCoreCustom;
 import pedroPathing.constants.FConstants;
 import pedroPathing.constants.LConstants;
 
-@TeleOp(name="Drive Beta", group="!advanced")
+@TeleOp(name = "Drive Beta", group = "!advanced")
 public class MainDriveOpmode extends OpMode {
     RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
-    double[] diffPos = new double[]{0, 0}; // Initialize with zero values
+    double[] diffPos = new double[]{0, 0};
     double extTargetPosition = 0;
     double wristPos = 0.5;
     Follower follower;
     Pose startPose = new Pose(0, 0, 0);
+    ElapsedTime peckTimer = new ElapsedTime();
+    ElapsedTime movementVectorTickTimer = new ElapsedTime();
+    ElapsedTime robotStateDebounceTimer = new ElapsedTime();
+    ElapsedTime gripperDebounceTimer = new ElapsedTime();
+    int peckState = 0;
 
-    public enum TeleState {
-
+    enum RobotState {
+        MANUAL,
+        POSITION_MODE_1,
+        POSITION_MODE_2
     }
+
+    enum GripperState {
+        OPEN,
+        CLOSED
+    }
+
+    GripperState gripperState = GripperState.CLOSED;
+    RobotState robotState = RobotState.MANUAL;
 
     @Override
     public void init() {
@@ -37,7 +52,7 @@ public class MainDriveOpmode extends OpMode {
     }
 
     @Override
-    public void start(){
+    public void start() {
         follower.startTeleopDrive();
         robotCoreCustom.homeMotorExt();
         robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
@@ -51,96 +66,160 @@ public class MainDriveOpmode extends OpMode {
         robotCoreCustom.setDiffPos(diffPos);
         robotCoreCustom.setWrist(wristPos);
         robotCoreCustom.homingUpdate();
-        follower.setTeleOpMovementVectors(-gamepad1.left_stick_y, -gamepad1.left_stick_x, gamepad1.right_stick_x * -0.46, true);
         robotCoreCustom.setExtPos(extTargetPosition);
 
-        // Telemetry data
         follower.update();
-        telemetry.addData("extHomingState", robotCoreCustom.extHomingState);
-        telemetry.addData("rotHomingState", robotCoreCustom.rotHomingState);
-        telemetry.addData("Ext AMPS", robotCoreCustom.motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("Ext Power", robotCoreCustom.motorControllerExt0.motor.getPower());
-        telemetry.addData("Rot AMPS", robotCoreCustom.motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS));
-        telemetry.addData("Rot Power", robotCoreCustom.motorControllerRot0.motor.getPower());
-        telemetry.addData("Diff Pos", "X: %.2f, Y: %.2f", diffPos[0], diffPos[1]);
-        telemetry.addData("Ext Target Position", extTargetPosition);
-        telemetry.addData("Ext Position", robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
-        telemetry.addData("RealDiffPos", "X: %.2f, Y: %.2f", robotCoreCustom.servoDiffLeft.getPosition(), robotCoreCustom.servoDiffRight.getPosition());
-        telemetry.addData("Wrist Position", wristPos);
+        telemetry.addData("Robot State", robotState);
+        telemetry.addData("Extension Target Position", extTargetPosition);
+        telemetry.addData("Extension Current Position", -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
         telemetry.update();
     }
 
     public void updateGamepad2(@NonNull Gamepad gamepad) {
-        if (-gamepad.right_stick_y > 0.1 || -gamepad.right_stick_y < -0.1) {
-            double power;
-            robotCoreCustom.enablePIDFExt = false;
-            if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN) {
-                power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
-            } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 490) {
-                power = Math.max(-1, Math.min(0.3, -gamepad.right_stick_y));
-            } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 5) {
-                power = Math.max(0, Math.min(1, -gamepad.right_stick_y));
-            } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 300) {
-                power = Math.max(-0.2, Math.min(1, -gamepad.right_stick_y));
+        if (robotState == RobotState.MANUAL) {
+            if (-gamepad.right_stick_y > 0.1 || -gamepad.right_stick_y < -0.1) {
+                double power;
+                robotCoreCustom.enablePIDFExt = false;
+                if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN) {
+                    power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
+                } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 490) {
+                    power = Math.max(-1, Math.min(0.3, -gamepad.right_stick_y));
+                } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 5) {
+                    power = Math.max(0, Math.min(1, -gamepad.right_stick_y));
+                } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 300) {
+                    power = Math.max(-0.2, Math.min(1, -gamepad.right_stick_y));
+                } else {
+                    power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
+                }
+                if (robotCoreCustom.motorControllerExt0.motor.getVelocity() > 400 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 50) {
+                    power = Math.max(0.2, Math.min(1, -gamepad.right_stick_y));
+                }
+                robotCoreCustom.motorControllerExt0.motor.setPower(power);
+                robotCoreCustom.motorControllerExt1.motor.setPower(power);
+                extTargetPosition = -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition();
             } else {
-                power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
+                robotCoreCustom.enablePIDFExt = true;
             }
-            if (robotCoreCustom.motorControllerExt0.motor.getVelocity() > 400 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 50) {
-                power = Math.max(0.2, Math.min(1, -gamepad.right_stick_y)); // Prevents slamming when the extension is at the bottom
+            if (gamepad.left_stick_y > 0.1 || gamepad.left_stick_y < -0.1) {
+                wristPos = Math.max(0, Math.min(1, gamepad.left_stick_y + 0.5));
             }
-            robotCoreCustom.motorControllerExt0.motor.setPower(power);
-            robotCoreCustom.motorControllerExt1.motor.setPower(power);
-            extTargetPosition = -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition();
-        } else {robotCoreCustom.enablePIDFExt = true;}
-
-        if (gamepad.y) {
-            robotCoreCustom.homeMotorExt();
         }
 
+        if (robotState == RobotState.POSITION_MODE_1) {
+            if (gamepad.left_stick_y > 0.2) {
+                extTargetPosition = 485;
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+            } else if (gamepad.left_stick_x < -0.2) {
+                extTargetPosition = 200;
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+            } else if (gamepad.left_stick_y < -0.2) {
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
+                robotCoreCustom.homeMotorExt();
+            }
+        }
 
-        //diffPos[0] += gamepad.right_stick_y * 0.1; // Adjust the scaling factor as needed
-        diffPos[1] += gamepad.right_stick_x * -0.05; // Adjust the scaling factor as needed
+        if (robotState == RobotState.POSITION_MODE_2) {
+            if (gamepad.left_stick_y > 0.2) {
+                extTargetPosition = 200;
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+            } else if (gamepad.left_stick_x < -0.2) {
+                extTargetPosition = 0;
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+            } else if (gamepad.left_stick_y < -0.2) {
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
+                robotCoreCustom.homeMotorExt();
+            }
+        }
 
-        // Ensure diffPos values are within a reasonable range
+        diffPos[1] += gamepad.right_stick_x * -0.05;
         diffPos[0] = Math.max(-1, Math.min(1, diffPos[0]));
         diffPos[1] = Math.max(-0.28, Math.min(0.28, diffPos[1]));
-
-        // Update wristPos based on gamepad input
-        wristPos += gamepad1.right_stick_x * 0.05; // Adjust the scaling factor as needed
-        // Ensure wristPos is within a reasonable range
+        wristPos += gamepad.right_stick_x * 0.05;
         wristPos = Math.max(0, Math.min(1, wristPos));
+
+        if (gamepad.right_trigger > 0.1) {
+            if (peckState == 0) {
+                peckStart();
+            }
+        } else {
+            if (peckState != 0) {
+                peckUpdate();
+            }
+        }
+
+        if (gamepad.dpad_down && robotStateDebounceTimer.milliseconds() > 100) {
+            if (robotState == RobotState.MANUAL || robotState == RobotState.POSITION_MODE_2) {
+                robotState = RobotState.POSITION_MODE_1;
+            } else if (robotState == RobotState.POSITION_MODE_1) {
+                robotState = RobotState.MANUAL;
+            }
+            robotStateDebounceTimer.reset();
+        } else if (gamepad.dpad_left && robotStateDebounceTimer.milliseconds() > 100) {
+            if (robotState == RobotState.MANUAL || robotState == RobotState.POSITION_MODE_1) {
+                robotState = RobotState.POSITION_MODE_2;
+            } else {
+                robotState = RobotState.MANUAL;
+            }
+            robotStateDebounceTimer.reset();
+        }
+        if (gamepad.left_bumper) {
+            if (gamepad.a) {
+                follower.setTeleOpMovementVectors(-1, 0, 0, true);
+                movementVectorTickTimer.reset();
+            } else if (gamepad.b) {
+                follower.setTeleOpMovementVectors(1, 0, 0, true);
+                movementVectorTickTimer.reset();
+            } else if (gamepad.x) {
+                follower.setTeleOpMovementVectors(0, -1, 0, true);
+                movementVectorTickTimer.reset();
+            } else if (gamepad.y) {
+                follower.setTeleOpMovementVectors(0, 1, 0, true);
+                movementVectorTickTimer.reset();
+            } else {
+                follower.setTeleOpMovementVectors(0, 0, 0, true); // Stop movement
+            }
+        }else {
+            if (gamepad.a) {
+                robotCoreCustom.homeMotorExt();
+            }
+            if (gamepad.b && gripperDebounceTimer.milliseconds() > 200) {
+                if (gripperState == GripperState.CLOSED) {
+                    robotCoreCustom.setGripper(0.35); // Open gripper
+                } else {
+                    robotCoreCustom.setGripper(0.57); // Close gripper
+                }
+            }
+        }
     }
+
     public void updateGamepad1(@NonNull Gamepad gamepad) {
-        // Update the diffPos array based on gamepad input
+        follower.setTeleOpMovementVectors(-gamepad.left_stick_y, -gamepad.left_stick_x, gamepad.right_stick_x * -0.46, true);
+    }
 
+    public void peckStart() {
+        peckState = 1;
+        peckTimer.reset();
+    }
 
+    public void peckUpdate() {
+        if (peckState == 1) {
+            robotCoreCustom.setGripper(0.35);
+            wristPos = 0.5;
+            if (peckTimer.milliseconds() > 500) {
+                peckState = 2;
+            }
+        } else if (peckState == 2) {
+            robotCoreCustom.setGripper(0.57);
+            wristPos = 0.5;
+            if (peckTimer.milliseconds() > 1000) {
+                peckState = 3;
+            }
+        } else if (peckState == 3) {
+            robotCoreCustom.setGripper(0.35);
+            wristPos = 0.5;
+            if (peckTimer.milliseconds() > 1500) {
+                peckState = 0;
+            }
+        }
     }
 }
-
-
-/*
-     High Bucket Ext = 485
-     Absolute Max Ext = 490
-
-
-     Keybinds:
-     Connor's Keybinds:
-     Right trigger = peck
-     right stick x(horizontal) = wrist rotation     DONE
-     right stick y(vertical) = extension        DONE
-     Dpad down = toggle between position mode 1 and manual mode
-     Dpad left = toggle between position mode 2 and manual mode
-     manual mode = manual control of extension and wrist
-        position mode 1:
-        left stick up is set pos for high bucket
-        left stick left is set pos for low bucket
-        left stick down is set pos for pickup
-
-        position mode 2:
-        left stick up is set pos for high sub hang
-        left stick left is set pos for low sub hang
-        left stick down is set pos for pickup
-
-    when holding left bumper a,b,x,y will move the robot follower slightly in the direction of the button pressed
-    otherwise a,b,x,y will control gripper etc.
- */
