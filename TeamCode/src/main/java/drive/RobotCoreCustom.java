@@ -23,6 +23,7 @@ public class RobotCoreCustom {
 	// Servo components for the gripper
     public Servo gripper, servoDiffLeft, servoDiffRight, servoWristRight, servoWristLeft;
     CustomPIDFController pidfControllerExt = new CustomPIDFController(110, 10, 2.5, 7);
+    public boolean enablePIDFExt = true; // Enable PIDF control for extension
     // Enum for homing states
     public enum HomingState {
         IDLE,
@@ -54,9 +55,9 @@ public class RobotCoreCustom {
         // Initialize servos
         servoDiffLeft = hardwareMap.get(Servo.class, "servo0");
         servoDiffRight = hardwareMap.get(Servo.class, "servo1");
-        //servoWristLeft = hardwareMap.get(Servo.class, "servoWristLeft");
-        //servoWristRight = hardwareMap.get(Servo.class, "servoWristRight");
-        //gripper = hardwareMap.get(Servo.class, "gripper");
+        servoWristLeft = hardwareMap.get(Servo.class, "servo3");
+        servoWristRight = hardwareMap.get(Servo.class, "servo4");
+        gripper = hardwareMap.get(Servo.class, "servo2"); // OPEN: 0.35, CLOSE: 0.57
         rotHomingState = HomingState.IDLE;
         extHomingState = HomingState.IDLE;
     }
@@ -128,6 +129,9 @@ public class RobotCoreCustom {
     }
 
     public void setExtPos(double position) {
+        if (!enablePIDFExt) {
+            return;
+        }
         double power = 0;
         if (extHomingState == HomingState.SUCCESS) {
             if (rotCurrentState == currentState.DOWN) {
@@ -178,6 +182,8 @@ public class RobotCoreCustom {
         // Clamp to [0, 1]
         servoLeft = Math.max(0, Math.min(1, servoLeft));
         servoRight = Math.max(0, Math.min(1, servoRight));
+
+        // Set the servo positions
         servoDiffLeft.setPosition(servoLeft);
         servoDiffRight.setPosition(servoRight);
     }
@@ -195,6 +201,5 @@ public class RobotCoreCustom {
      */
     public void updateAll() {
         homingUpdate();
-
     }
 }
