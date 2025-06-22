@@ -72,6 +72,7 @@ public class MainDriveOpmode extends OpMode {
         telemetry.addData("Robot State", robotState);
         telemetry.addData("Extension Target Position", extTargetPosition);
         telemetry.addData("Extension Current Position", -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
+        telemetry.addData("Wrist Position", wristPos);
         telemetry.update();
     }
 
@@ -101,7 +102,7 @@ public class MainDriveOpmode extends OpMode {
                 robotCoreCustom.enablePIDFExt = true;
             }
             if (gamepad.left_stick_y > 0.1 || gamepad.left_stick_y < -0.1) {
-                wristPos = Math.max(0, Math.min(1, gamepad.left_stick_y + 0.5));
+                wristPos = Math.max(0, Math.min(1, gamepad.left_stick_y*0.05 + 0.5));
             }
         }
 
@@ -193,7 +194,9 @@ public class MainDriveOpmode extends OpMode {
     }
 
     public void updateGamepad1(@NonNull Gamepad gamepad) {
-        follower.setTeleOpMovementVectors(-gamepad.left_stick_y, -gamepad.left_stick_x, gamepad.right_stick_x * -0.46, true);
+        if (!gamepad2.left_bumper) {
+            follower.setTeleOpMovementVectors(-gamepad.left_stick_y, -gamepad.left_stick_x, gamepad.right_stick_x * -0.46, true);
+        }
     }
 
     public void peckStart() {

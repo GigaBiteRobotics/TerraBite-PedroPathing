@@ -53,9 +53,9 @@ public class RobotCoreCustom {
         motorControllerRot1.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Initialize servos
-        servoDiffLeft = hardwareMap.get(Servo.class, "servo0");
+        servoDiffLeft = hardwareMap.get(Servo.class, "servo3");
         servoDiffRight = hardwareMap.get(Servo.class, "servo1");
-        servoWristLeft = hardwareMap.get(Servo.class, "servo3");
+        servoWristLeft = hardwareMap.get(Servo.class, "servo0");
         servoWristRight = hardwareMap.get(Servo.class, "servo4");
         gripper = hardwareMap.get(Servo.class, "servo2"); // OPEN: 0.35, CLOSE: 0.57
         rotHomingState = HomingState.IDLE;
@@ -194,7 +194,7 @@ public class RobotCoreCustom {
      */
     public void setWrist(double position) {
         servoWristLeft.setPosition(position);
-        servoWristRight.setPosition(position);
+        //servoWristRight.setPosition(position);
     }
     /**
      * Updates all components of the robot.
