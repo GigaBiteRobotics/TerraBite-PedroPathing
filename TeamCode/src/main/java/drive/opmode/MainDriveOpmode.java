@@ -56,6 +56,7 @@ public class MainDriveOpmode extends OpMode {
         follower.startTeleopDrive();
         robotCoreCustom.homeMotorExt();
         robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+        robotCoreCustom.setGripper(0.57); // Close gripper
     }
 
     @Override
@@ -135,7 +136,7 @@ public class MainDriveOpmode extends OpMode {
         diffPos[1] += gamepad.right_stick_x * -0.05;
         diffPos[0] = Math.max(-1, Math.min(1, diffPos[0]));
         diffPos[1] = Math.max(-0.28, Math.min(0.28, diffPos[1]));
-        wristPos += gamepad.right_stick_x * 0.05;
+        //wristPos += gamepad.right_stick_x * 0.05;
         wristPos = Math.max(0, Math.min(1, wristPos));
 
         if (gamepad.right_trigger > 0.1) {
@@ -186,9 +187,12 @@ public class MainDriveOpmode extends OpMode {
             if (gamepad.b && gripperDebounceTimer.milliseconds() > 200) {
                 if (gripperState == GripperState.CLOSED) {
                     robotCoreCustom.setGripper(0.35); // Open gripper
+                    gripperState = GripperState.OPEN;
                 } else {
                     robotCoreCustom.setGripper(0.57); // Close gripper
+                    gripperState = GripperState.CLOSED;
                 }
+                gripperDebounceTimer.reset();
             }
         }
     }

@@ -54,9 +54,9 @@ public class RobotCoreCustom {
 
         // Initialize servos
         servoDiffLeft = hardwareMap.get(Servo.class, "servo3");
-        servoDiffRight = hardwareMap.get(Servo.class, "servo1");
+        servoDiffRight = hardwareMap.get(Servo.class, "servo4");
         servoWristLeft = hardwareMap.get(Servo.class, "servo0");
-        servoWristRight = hardwareMap.get(Servo.class, "servo4");
+        servoWristRight = hardwareMap.get(Servo.class, "servo1");
         gripper = hardwareMap.get(Servo.class, "servo2"); // OPEN: 0.35, CLOSE: 0.57
         rotHomingState = HomingState.IDLE;
         extHomingState = HomingState.IDLE;
@@ -194,7 +194,7 @@ public class RobotCoreCustom {
      */
     public void setWrist(double position) {
         servoWristLeft.setPosition(position);
-        //servoWristRight.setPosition(position);
+        servoWristRight.setPosition(position);
     }
     /**
      * Updates all components of the robot.
