@@ -53,10 +53,10 @@ public class RobotCoreCustom {
         motorControllerRot1.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         // Initialize servos
-        servoDiffLeft = hardwareMap.get(Servo.class, "servo3");
-        servoDiffRight = hardwareMap.get(Servo.class, "servo4");
-        servoWristLeft = hardwareMap.get(Servo.class, "servo0");
-        servoWristRight = hardwareMap.get(Servo.class, "servo1");
+        servoDiffLeft = hardwareMap.get(Servo.class, "servo0");
+        servoDiffRight = hardwareMap.get(Servo.class, "servo1");
+        servoWristLeft = hardwareMap.get(Servo.class, "servo3");
+        servoWristRight = hardwareMap.get(Servo.class, "servo4");
         gripper = hardwareMap.get(Servo.class, "servo2"); // OPEN: 0.35, CLOSE: 0.57
         rotHomingState = HomingState.IDLE;
         extHomingState = HomingState.IDLE;
@@ -173,11 +173,10 @@ public class RobotCoreCustom {
         double rotation = pos[0]; // -1 to 1
         double pitch = pos[1];    // -1 to 1
 
-        double pitchComponent = pitch;
-        double rotationComponent = rotation * (18.0 / 52.0);
+	    double rotationComponent = rotation * (18.0 / 52.0);
 
-        double servoLeft = 0.5 + (rotationComponent * 0.5) + (pitchComponent * 0.5);
-        double servoRight = 0.5 - (rotationComponent * 0.5) + (pitchComponent * 0.5);
+        double servoLeft = 0.5 + (rotationComponent * 0.5) + (pitch * 0.5);
+        double servoRight = 0.5 - (rotationComponent * 0.5) + (pitch * 0.5);
 
         // Clamp to [0, 1]
         servoLeft = Math.max(0, Math.min(1, servoLeft));
@@ -194,7 +193,7 @@ public class RobotCoreCustom {
      */
     public void setWrist(double position) {
         servoWristLeft.setPosition(position);
-        servoWristRight.setPosition(position);
+        servoWristRight.setPosition(1-position);
     }
     /**
      * Updates all components of the robot.

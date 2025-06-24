@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 
 import drive.RobotCoreCustom;
 import pedroPathing.constants.FConstants;
@@ -21,7 +22,7 @@ public class MainDriveOpmode extends OpMode {
     RobotCoreCustom robotCoreCustom = new RobotCoreCustom();
     double[] diffPos = new double[]{0, 0};
     double extTargetPosition = 0;
-    double wristPos = 0.5;
+    double wristPos = 0;
     Follower follower;
     Pose startPose = new Pose(0, 0, 0);
     ElapsedTime peckTimer = new ElapsedTime();
@@ -55,7 +56,7 @@ public class MainDriveOpmode extends OpMode {
     public void start() {
         follower.startTeleopDrive();
         robotCoreCustom.homeMotorExt();
-        robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+        robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
         robotCoreCustom.setGripper(0.57); // Close gripper
     }
 
@@ -74,6 +75,9 @@ public class MainDriveOpmode extends OpMode {
         telemetry.addData("Extension Target Position", extTargetPosition);
         telemetry.addData("Extension Current Position", -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
         telemetry.addData("Wrist Position", wristPos);
+        telemetry.addData("Gripper State", gripperState);
+        telemetry.addData("rotCurrentState", robotCoreCustom.rotCurrentState);
+        telemetry.addData("rotAMPS", robotCoreCustom.motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS));
         telemetry.update();
     }
 
@@ -103,7 +107,8 @@ public class MainDriveOpmode extends OpMode {
                 robotCoreCustom.enablePIDFExt = true;
             }
             if (gamepad.left_stick_y > 0.1 || gamepad.left_stick_y < -0.1) {
-                wristPos = Math.max(0, Math.min(1, gamepad.left_stick_y*0.05 + 0.5));
+                wristPos += gamepad.left_stick_y * 0.05;
+                wristPos = Math.max(0, Math.min(1, wristPos));
             }
         }
 
@@ -149,14 +154,14 @@ public class MainDriveOpmode extends OpMode {
             }
         }
 
-        if (gamepad.dpad_down && robotStateDebounceTimer.milliseconds() > 100) {
+        if (gamepad.dpad_down && robotStateDebounceTimer.milliseconds() > 200) {
             if (robotState == RobotState.MANUAL || robotState == RobotState.POSITION_MODE_2) {
                 robotState = RobotState.POSITION_MODE_1;
             } else if (robotState == RobotState.POSITION_MODE_1) {
                 robotState = RobotState.MANUAL;
             }
             robotStateDebounceTimer.reset();
-        } else if (gamepad.dpad_left && robotStateDebounceTimer.milliseconds() > 100) {
+        } else if (gamepad.dpad_left && robotStateDebounceTimer.milliseconds() > 200) {
             if (robotState == RobotState.MANUAL || robotState == RobotState.POSITION_MODE_1) {
                 robotState = RobotState.POSITION_MODE_2;
             } else {
@@ -166,16 +171,16 @@ public class MainDriveOpmode extends OpMode {
         }
         if (gamepad.left_bumper) {
             if (gamepad.a) {
-                follower.setTeleOpMovementVectors(-1, 0, 0, true);
-                movementVectorTickTimer.reset();
-            } else if (gamepad.b) {
-                follower.setTeleOpMovementVectors(1, 0, 0, true);
-                movementVectorTickTimer.reset();
-            } else if (gamepad.x) {
-                follower.setTeleOpMovementVectors(0, -1, 0, true);
+                follower.setTeleOpMovementVectors(-0.4, 0, 0, true);
                 movementVectorTickTimer.reset();
             } else if (gamepad.y) {
-                follower.setTeleOpMovementVectors(0, 1, 0, true);
+                follower.setTeleOpMovementVectors(0.4, 0, 0, true);
+                movementVectorTickTimer.reset();
+            } else if (gamepad.x) {
+                follower.setTeleOpMovementVectors(0, 0.4, 0, true);
+                movementVectorTickTimer.reset();
+            } else if (gamepad.b) {
+                follower.setTeleOpMovementVectors(0, -0.4, 0, true);
                 movementVectorTickTimer.reset();
             } else {
                 follower.setTeleOpMovementVectors(0, 0, 0, true); // Stop movement
@@ -211,19 +216,19 @@ public class MainDriveOpmode extends OpMode {
     public void peckUpdate() {
         if (peckState == 1) {
             robotCoreCustom.setGripper(0.35);
-            wristPos = 0.5;
+            wristPos = 0.9;
             if (peckTimer.milliseconds() > 500) {
                 peckState = 2;
             }
         } else if (peckState == 2) {
             robotCoreCustom.setGripper(0.57);
-            wristPos = 0.5;
+            wristPos = 0.9;
             if (peckTimer.milliseconds() > 1000) {
                 peckState = 3;
             }
         } else if (peckState == 3) {
             robotCoreCustom.setGripper(0.35);
-            wristPos = 0.5;
+            wristPos = 0.9;
             if (peckTimer.milliseconds() > 1500) {
                 peckState = 0;
             }
