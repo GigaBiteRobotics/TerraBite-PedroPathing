@@ -74,7 +74,7 @@ public class RobotCoreCustom {
         }
     }
     public void homingUpdate() {
-        double voltagePowerMap = (controlHubVoltageSensor.getVoltage()/12); // Assuming 12V nominal voltage
+        double voltagePowerMap = (controlHubVoltageSensor.getVoltage()/13); // Assuming 13V nominal voltage
         if (extHomingState == HomingState.DOWN) {
             if (motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS) > 6*(voltagePowerMap) || motorControllerExt1.motor.getCurrent(CurrentUnit.AMPS) > 6*(voltagePowerMap)) {
                 // If the current is above a threshold, we assume the limit switch is pressed
