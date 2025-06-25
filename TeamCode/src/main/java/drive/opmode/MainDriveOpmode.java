@@ -46,6 +46,7 @@ public class MainDriveOpmode extends OpMode {
         LOW_BASKET,
         HIGH_SUB,
         LOW_SUB,
+        IDLE,
         PICKUP
     }
     int positionStateIndex = 0;
@@ -53,7 +54,7 @@ public class MainDriveOpmode extends OpMode {
     GripperState gripperState = GripperState.CLOSED;
     RobotState robotState = RobotState.MANUAL;
 
-    PositionState positionState = PositionState.PICKUP;
+    PositionState positionState = PositionState.IDLE;
 
     @Override
     public void init() {
@@ -67,8 +68,10 @@ public class MainDriveOpmode extends OpMode {
         setPositionTimer.reset();
         follower.startTeleopDrive();
         robotCoreCustom.homeMotorExt();
+        extTargetPosition = 0;
+        wristPos = 0;
         robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
-        robotCoreCustom.setGripper(0.57); // Close gripper
+        robotCoreCustom.setGripper(0.57);
     }
 
     @Override
@@ -79,17 +82,22 @@ public class MainDriveOpmode extends OpMode {
         robotCoreCustom.setDiffPos(diffPos);
         robotCoreCustom.setWrist(wristPos);
         robotCoreCustom.homingUpdate();
+        if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && extTargetPosition > 85) {
+            extTargetPosition = 85;
+        }
         robotCoreCustom.setExtPos(extTargetPosition);
         updatePosition();
 
         follower.update();
         telemetry.addData("Robot State", robotState);
+        telemetry.addData("Position State", positionState);
         telemetry.addData("Extension Target Position", extTargetPosition);
         telemetry.addData("Extension Current Position", -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
         telemetry.addData("Wrist Position", wristPos);
         telemetry.addData("Gripper State", gripperState);
         telemetry.addData("rotCurrentState", robotCoreCustom.rotCurrentState);
-        telemetry.addData("rotAMPS", robotCoreCustom.motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS));
+        telemetry.addData("rotPosition0", robotCoreCustom.motorControllerRot0.motor.getCurrentPosition());
+        telemetry.addData("right Trigger", gamepad2.right_trigger);
         telemetry.update();
     }
 
@@ -98,8 +106,10 @@ public class MainDriveOpmode extends OpMode {
             if (-gamepad.right_stick_y > 0.1 || -gamepad.right_stick_y < -0.1) {
                 double power;
                 robotCoreCustom.enablePIDFExt = false;
-                if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN) {
+                if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 85) {
                     power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
+                } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 85) {
+                    power = Math.max(-1, Math.min(0, -gamepad.right_stick_y));
                 } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 490) {
                     power = Math.max(-1, Math.min(0.3, -gamepad.right_stick_y));
                 } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 5) {
@@ -122,31 +132,36 @@ public class MainDriveOpmode extends OpMode {
                 wristPos += gamepad.left_stick_y * 0.05;
                 wristPos = Math.max(0, Math.min(1, wristPos));
             }
+            if (gamepad.y && !gamepad.left_bumper) {
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+            } else if (gamepad.x && !gamepad.left_bumper) {
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
+            }
         }
 
         if (robotState == RobotState.POSITION_MODE_1) {
-            if (gamepad.left_stick_y > 0.2) {
+            if (gamepad.left_stick_y < -0.2) {
                 positionState = PositionState.HIGH_BASKET;
                 positionStateIndex = 0;
             } else if (gamepad.left_stick_x < -0.2) {
                 positionState = PositionState.LOW_BASKET;
                 positionStateIndex = 0;
-            } else if (gamepad.left_stick_y < -0.2) {
-                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
-                robotCoreCustom.homeMotorExt();
+            } else if (gamepad.left_stick_y > 0.2) {
+                positionState = PositionState.PICKUP;
+                positionStateIndex = 0;
             }
         }
 
         if (robotState == RobotState.POSITION_MODE_2) {
             if (gamepad.left_stick_y > 0.2) {
-                extTargetPosition = 200;
-                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
+                positionState = PositionState.HIGH_SUB;
+                positionStateIndex = 0;
             } else if (gamepad.left_stick_x < -0.2) {
-                extTargetPosition = 0;
-                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
-            } else if (gamepad.left_stick_y < -0.2) {
-                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
-                robotCoreCustom.homeMotorExt();
+                positionState = PositionState.LOW_SUB;
+                positionStateIndex = 0;
+            } else if (gamepad.left_stick_y > 0.2) {
+                positionState = PositionState.PICKUP;
+                positionStateIndex = 0;
             }
         }
 
@@ -156,7 +171,7 @@ public class MainDriveOpmode extends OpMode {
         //wristPos += gamepad.right_stick_x * 0.05;
         wristPos = Math.max(0, Math.min(1, wristPos));
 
-        if (gamepad.right_trigger > 0.1) {
+        if (gamepad.right_bumper) {
             if (peckState == 0) {
                 peckStart();
             }
@@ -198,8 +213,9 @@ public class MainDriveOpmode extends OpMode {
                 follower.setTeleOpMovementVectors(0, 0, 0, true); // Stop movement
             }
         }else {
-            if (gamepad.a) {
+            if (gamepad.a && !(positionState == PositionState.HIGH_SUB || positionState == PositionState.LOW_SUB)) {
                 robotCoreCustom.homeMotorExt();
+                extTargetPosition = 0;
             }
             if (gamepad.b && gripperDebounceTimer.milliseconds() > 200) {
                 if (gripperState == GripperState.CLOSED) {
@@ -249,6 +265,7 @@ public class MainDriveOpmode extends OpMode {
     public void updatePosition() {
         if (positionState == PositionState.HIGH_BASKET) {
             if (positionStateIndex == 0) {
+                robotCoreCustom.homeMotorExt();
                 robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
                 positionStateIndex = 1;
                 setPositionTimer.reset();
@@ -256,6 +273,7 @@ public class MainDriveOpmode extends OpMode {
                 extTargetPosition = 485;
                 wristPos = 0.5;
                 positionStateIndex = 0;
+                positionState = PositionState.IDLE;
             }
         }
         if (positionState == PositionState.LOW_BASKET) {
@@ -267,7 +285,62 @@ public class MainDriveOpmode extends OpMode {
                 extTargetPosition = 200;
                 wristPos = 0.5;
                 positionStateIndex = 0;
+                positionState = PositionState.IDLE;
+            }
+        }
+        if (positionState == PositionState.HIGH_SUB) {
+            if (positionStateIndex == 0) {
+                robotCoreCustom.homeMotorExt();
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
+                positionStateIndex = 1;
+                setPositionTimer.reset();
+            } else if (positionStateIndex == 1 && robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP && gamepad2.a) {
+                extTargetPosition = 150;
+                wristPos = 0.5;
+                positionStateIndex = 0;
+                positionState = PositionState.IDLE;
+            }
+        }
+        if (positionState == PositionState.PICKUP) {
+            if (positionStateIndex == 0) {
+                robotCoreCustom.homeMotorExt();
+                positionStateIndex = 1;
+                setPositionTimer.reset();
+            } else if (positionStateIndex == 1 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 25) {
+                robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
+                extTargetPosition = 85;
+                diffPos = new double[]{0, 0};
+                wristPos = 0.8;
+                positionStateIndex = 0;
+                positionState = PositionState.IDLE;
             }
         }
     }
 }
+
+/*
+     High Bucket Ext = 485
+     Absolute Max Ext = 490
+
+
+     Keybinds:
+     Connor's Keybinds:
+     Right trigger = peck
+     right stick x(horizontal) = wrist rotation     DONE
+     right stick y(vertical) = extension        DONE
+     Dpad down = toggle between position mode 1 and manual mode  DONE
+     Dpad left = toggle between position mode 2 and manual mode     DONW
+     manual mode = manual control of extension and wrist        DONE
+        position mode 1:
+        left stick up is set pos for high bucket        DONE
+        left stick left is set pos for low bucket
+        left stick down is set pos for pickup
+
+        position mode 2:
+        left stick up is set pos for high sub hang      DONE
+        left stick left is set pos for low sub hang
+        left stick down is set pos for pickup
+
+    when holding left bumper a,b,x,y will move the robot follower slightly in the direction of the button pressed
+    otherwise a,b,x,y will control gripper etc.
+ */
