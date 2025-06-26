@@ -74,7 +74,7 @@ public class RobotCoreCustom {
         }
     }
     public void homingUpdate() {
-        double voltagePowerMap = (controlHubVoltageSensor.getVoltage()/12); // Assuming 13V nominal voltage
+        double voltagePowerMap = 1;   //Math.min(1, 4.0 / controlHubVoltageSensor.getVoltage()); // More sensitive at lower voltage, max 1
         if (extHomingState == HomingState.DOWN) {
             if (motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS) > 6*(voltagePowerMap) || motorControllerExt1.motor.getCurrent(CurrentUnit.AMPS) > 6*(voltagePowerMap)) {
                 // If the current is above a threshold, we assume the limit switch is pressed
@@ -97,7 +97,7 @@ public class RobotCoreCustom {
 
         }
         if (rotHomingState == HomingState.DOWN) {
-            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2.7*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 2.7*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() < 200) {
+            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() < 200) {
                 rotHomingState = HomingState.IDLE;
                 motorControllerRot0.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motorControllerRot1.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -114,7 +114,7 @@ public class RobotCoreCustom {
             }
         }
         if (rotHomingState == HomingState.UP) {
-            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2.5*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 2.5*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() > 2500) {
+            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() > 2500) {
                 rotHomingState = HomingState.IDLE;
                 motorControllerRot0.motor.setPower(0);
                 motorControllerRot1.motor.setPower(0);
@@ -173,14 +173,14 @@ public class RobotCoreCustom {
     }
 
     public void setDiffPos(double[] pos) {
-        double rotation = pos[0]; // -1 to 1
-        double pitch = pos[1];    // -1 to 1
+        double pitchComponent = pos[0]; // -1 to 1
+        double rotation = pos[1];    // -1 to 1
 
-        double rotationComponent = rotation * (18.0 / 52.0);
+        double rotationComponent = pitchComponent * (18.0 / 52.0); // 18/52
 
         // Increase pitch range: scale pitch by 1.0 instead of 0.5
-        double servoLeft = 0.5 + (rotationComponent * 0.5) + (pitch * 1.0);
-        double servoRight = 0.5 - (rotationComponent * 0.5) + (pitch * 1.0);
+        double servoLeft = 0.5 + (rotationComponent * 0.5) + (rotation * 0.5);
+        double servoRight = 0.5 - (rotationComponent * 0.5) + (rotation * 0.5);
 
         // Clamp to [0, 1]
         servoLeft = Math.max(0, Math.min(1, servoLeft));
