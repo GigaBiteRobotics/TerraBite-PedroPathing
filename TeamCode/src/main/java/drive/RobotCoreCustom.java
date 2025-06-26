@@ -5,6 +5,7 @@ import com.pedropathing.localization.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -20,6 +21,7 @@ public class RobotCoreCustom {
     public currentState extCurrentState = currentState.UNKNOWN;
     public currentState rotCurrentState = currentState.UNKNOWN;
     private VoltageSensor controlHubVoltageSensor;
+    public TouchSensor backLimitSW;
 	// Servo components for the gripper
     public Servo gripper, servoDiffLeft, servoDiffRight, servoWristRight, servoWristLeft;
     CustomPIDFController pidfControllerExt = new CustomPIDFController(110, 10, 2.5, 7);
@@ -44,6 +46,7 @@ public class RobotCoreCustom {
      */
     public void robotCoreInit(HardwareMap hardwareMap) {
         controlHubVoltageSensor = hardwareMap.get(VoltageSensor.class, "Control Hub");
+        backLimitSW = hardwareMap.get(TouchSensor.class, "backLimitSwitch");
         // Initialize motors
         motorControllerRot0.initializeMotor("expM2", hardwareMap, false, true, null, false);
         motorControllerRot1.initializeMotor("expM3", hardwareMap, false, false, null, false);
@@ -97,7 +100,7 @@ public class RobotCoreCustom {
 
         }
         if (rotHomingState == HomingState.DOWN) {
-            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() < 200) {
+            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 0.8*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() < 200) {
                 rotHomingState = HomingState.IDLE;
                 motorControllerRot0.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 motorControllerRot1.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -114,7 +117,7 @@ public class RobotCoreCustom {
             }
         }
         if (rotHomingState == HomingState.UP) {
-            if ((motorControllerRot0.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap) || motorControllerRot1.motor.getCurrent(CurrentUnit.AMPS) > 2*(voltagePowerMap)) && motorControllerRot0.motor.getCurrentPosition() > 2500) {
+            if (backLimitSW.isPressed()) {
                 rotHomingState = HomingState.IDLE;
                 motorControllerRot0.motor.setPower(0);
                 motorControllerRot1.motor.setPower(0);
