@@ -47,7 +47,7 @@ public class MainDriveOpmode extends OpMode {
         HIGH_SUB,
         LOW_SUB,
         IDLE,
-        WALL_PICKUP, PICKUP
+        WALL_PICKUP, BUMP, PICKUP
     }
     int positionStateIndex = 0;
 
@@ -81,8 +81,8 @@ public class MainDriveOpmode extends OpMode {
         robotCoreCustom.setDiffPos(diffPos);
         robotCoreCustom.setWrist(wristPos);
         robotCoreCustom.homingUpdate();
-        if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && extTargetPosition > 85) {
-            extTargetPosition = 85;
+        if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && extTargetPosition > 60) {
+            extTargetPosition = 60;
         }
         if (gripperState == GripperState.CLOSED) {
             robotCoreCustom.setGripper(0.57); // Close gripper
@@ -99,13 +99,12 @@ public class MainDriveOpmode extends OpMode {
         telemetry.addData("Position State", positionState);
         telemetry.addData("Extension Target Position", extTargetPosition);
         telemetry.addData("Extension Current Position", -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition());
+        telemetry.addData("Extension Power", robotCoreCustom.motorControllerExt0.motor.getCurrent(CurrentUnit.AMPS));
         telemetry.addData("Wrist Position", wristPos);
         telemetry.addData("Gripper State", gripperState);
         telemetry.addData("rotCurrentState", robotCoreCustom.rotCurrentState);
-        telemetry.addData("rotPosition0", robotCoreCustom.motorControllerRot0.motor.getCurrentPosition());
         telemetry.addData("diffPos", diffPos[0] + ", " + diffPos[1]);
-        telemetry.addData("peckState", peckState);
-        telemetry.addData("limitSW", robotCoreCustom.backLimitSW.isPressed());
+        telemetry.addData("RealDiffPos", robotCoreCustom.servoDiffLeft.getPosition() + ", " + robotCoreCustom.servoDiffRight.getPosition());
         telemetry.update();
     }
 
@@ -114,15 +113,15 @@ public class MainDriveOpmode extends OpMode {
             if (-gamepad.right_stick_y > 0.1 || -gamepad.right_stick_y < -0.1) {
                 double power;
                 robotCoreCustom.enablePIDFExt = false;
-                if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 85) {
+                if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 60) {
                     power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
-                } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 85) {
+                } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.DOWN && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 60) {
                     power = Math.max(-1, Math.min(0, -gamepad.right_stick_y));
-                } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 490) {
+                } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 650) {
                     power = Math.max(-1, Math.min(0.3, -gamepad.right_stick_y));
                 } else if (-robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 5) {
                     power = Math.max(0, Math.min(1, -gamepad.right_stick_y));
-                } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 300) {
+                } else if (robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 150) {
                     power = Math.max(-0.2, Math.min(1, -gamepad.right_stick_y));
                 } else {
                     power = Math.max(-1, Math.min(1, -gamepad.right_stick_y));
@@ -234,6 +233,10 @@ public class MainDriveOpmode extends OpMode {
                 gripperDebounceTimer.reset();
             }
         }
+        if (gamepad.left_trigger > 0.1 && robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP) {
+            positionState = PositionState.BUMP;
+            positionStateIndex = 0;
+        }
     }
 
     public void updateGamepad1(@NonNull Gamepad gamepad) {
@@ -278,9 +281,9 @@ public class MainDriveOpmode extends OpMode {
                 diffPos = new double[]{0, 0};
             } else if (positionStateIndex == 1 && robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP) {
                 robotCoreCustom.homeMotorExt();
-                extTargetPosition = 485;
+                extTargetPosition = 600;
                 positionStateIndex = 2;
-            } else if (positionStateIndex == 2 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 450) {
+            } else if (positionStateIndex == 2 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() > 550) {
                 wristPos = 0.65;
                 positionStateIndex = 0;
                 positionState = PositionState.IDLE;
@@ -306,23 +309,29 @@ public class MainDriveOpmode extends OpMode {
         if (positionState == PositionState.HIGH_SUB) {
             if (positionStateIndex == 0) {
                 robotCoreCustom.homeMotorExt();
+                wristPos = 0.44;
+                positionStateIndex = 1;
+                diffPos = new double[]{1, 0};
+                setPositionTimer.reset();
+            } else if (positionStateIndex == 1 && setPositionTimer.milliseconds() > 500) {
                 robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.UP);
-                wristPos = 0.25;
-                positionStateIndex = 0;
-                diffPos = new double[]{2, 0};
+                positionStateIndex = 2;
+            } else if (positionStateIndex == 2 && robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP) {
+                extTargetPosition = 270;
                 positionState = PositionState.IDLE;
             }
         }
         if (positionState == PositionState.PICKUP) {
             if (positionStateIndex == 0) {
+                gripperState = GripperState.OPEN;
                 extTargetPosition = 0;
                 positionStateIndex = 1;
                 setPositionTimer.reset();
                 wristPos = 0.76;
-            } else if (positionStateIndex == 1 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 25) {
                 robotCoreCustom.homeMotorExt();
+            } else if (positionStateIndex == 1 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 25) {
                 robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
-                extTargetPosition = 85;
+                extTargetPosition = 60;
                 diffPos = new double[]{1, 0};
                 positionStateIndex = 0;
                 positionState = PositionState.IDLE;
@@ -333,15 +342,25 @@ public class MainDriveOpmode extends OpMode {
                 extTargetPosition = 0;
                 positionStateIndex = 1;
                 gripperState = GripperState.OPEN;
-                wristPos = 0.71;
+                wristPos = 0.68;
                 diffPos = new double[]{0, 0};
                 setPositionTimer.reset();
-                gripperState = GripperState.CLOSED;
         } else if (positionStateIndex == 1 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 25) {
                 robotCoreCustom.homeMotorExt();
                 robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
                 extTargetPosition = 0;
-                wristPos = 0.7;
+                wristPos = 0.68;
+                positionStateIndex = 0;
+                positionState = PositionState.IDLE;
+            }
+        }
+        if (positionState == PositionState.BUMP) {
+            if (positionStateIndex == 0) {
+                extTargetPosition += 50;
+                setPositionTimer.reset();
+                positionStateIndex = 1;
+            } else if (positionStateIndex == 1 && setPositionTimer.milliseconds() > 200) {
+                gripperState = GripperState.OPEN;
                 positionStateIndex = 0;
                 positionState = PositionState.IDLE;
             }
