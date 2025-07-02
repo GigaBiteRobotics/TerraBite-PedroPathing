@@ -205,6 +205,24 @@ public class RobotCoreCustom {
         servoDiffLeft.setPosition(servoLeft-0.02);
         servoDiffRight.setPosition(servoRight-0.02);
     }
+    public void setDiffPos(double[] pos, double offset) {
+        double pitchComponent = pos[0]; // -1 to 1
+        double rotation = pos[1];    // -1 to 1
+
+        double rotationComponent = pitchComponent * (18.0 / 52.0); // 18/52
+
+        // Increase pitch range: scale pitch by 1.0 instead of 0.5
+        double servoLeft = 0.5 + (rotationComponent * 0.5) + (rotation * 0.5);
+        double servoRight = 0.5 - (rotationComponent * 0.5) + (rotation * 0.5);
+
+        // Clamp to [0, 1]
+        servoLeft = Math.max(0, Math.min(1, servoLeft) + offset);
+        servoRight = Math.max(0, Math.min(1, servoRight) - offset);
+
+        // Set the servo positions
+        servoDiffLeft.setPosition(servoLeft-0.02);
+        servoDiffRight.setPosition(servoRight-0.02);
+    }
 
     /**
      * Sets the wrist servo position.
