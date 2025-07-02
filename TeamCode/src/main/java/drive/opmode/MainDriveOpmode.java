@@ -106,6 +106,7 @@ public class MainDriveOpmode extends OpMode {
         telemetry.addData("rotCurrentState", robotCoreCustom.rotCurrentState);
         telemetry.addData("diffPos", diffPos[0] + ", " + diffPos[1]);
         telemetry.addData("RealDiffPos", robotCoreCustom.servoDiffLeft.getPosition() + ", " + robotCoreCustom.servoDiffRight.getPosition());
+        telemetry.addData("right_trigger", gamepad2.right_trigger);
         telemetry.update();
     }
 
@@ -156,7 +157,7 @@ public class MainDriveOpmode extends OpMode {
             } else if (gamepad.left_stick_y > 0.2) {
                 positionState = PositionState.PICKUP;
                 positionStateIndex = 0;
-            } else if (gamepad.b && !gamepad.left_bumper) {
+            } else if ((gamepad.b) && !gamepad.left_bumper) {
                 wristPos = 0.65; // Reset wrist position
             }
         }
@@ -225,7 +226,7 @@ public class MainDriveOpmode extends OpMode {
                 robotCoreCustom.homeMotorExt();
                 extTargetPosition = 0;
             }
-            if (gamepad.b && gripperDebounceTimer.milliseconds() > 200) {
+            if ((gamepad.b || gamepad.right_trigger > 0.2) && gripperDebounceTimer.milliseconds() > 200) {
                 if (gripperState == GripperState.CLOSED) {
                     robotCoreCustom.setGripper(0.35); // Open gripper
                     gripperState = GripperState.OPEN;
@@ -253,6 +254,25 @@ public class MainDriveOpmode extends OpMode {
     public void updateGamepad1(@NonNull Gamepad gamepad) {
         if (!gamepad2.left_bumper) {
             follower.setTeleOpMovementVectors(-gamepad.left_stick_y, -gamepad.left_stick_x, gamepad.right_stick_x * -0.67, true);
+        }
+
+        // abxy movement
+        if (gamepad.dpad_down) {
+            follower.setTeleOpMovementVectors(-0.4, 0, 0, true);
+            movementVectorTickTimer.reset();
+        } else if (gamepad.dpad_up) {
+            follower.setTeleOpMovementVectors(0.4, 0, 0, true);
+            movementVectorTickTimer.reset();
+        } else if (gamepad.dpad_left) {
+            follower.setTeleOpMovementVectors(0, 0.4, 0, true);
+            movementVectorTickTimer.reset();
+        } else if (gamepad.dpad_right) {
+            follower.setTeleOpMovementVectors(0, -0.4, 0, true);
+            movementVectorTickTimer.reset();
+        } else {
+            if (!gamepad2.left_bumper) {
+                follower.setTeleOpMovementVectors(-gamepad.left_stick_y, -gamepad.left_stick_x, gamepad.right_stick_x * -0.67, true);
+            }
         }
     }
 
@@ -325,7 +345,6 @@ public class MainDriveOpmode extends OpMode {
                 robotCoreCustom.homeMotorExt();
                 wristPos = 0.44;
                 positionStateIndex = 1;
-                diffPos = new double[]{1, 0};
                 diffOffset = 0;
                 setPositionTimer.reset();
             } else if (positionStateIndex == 1 && setPositionTimer.milliseconds() > 500) {
@@ -333,6 +352,7 @@ public class MainDriveOpmode extends OpMode {
                 positionStateIndex = 2;
             } else if (positionStateIndex == 2 && robotCoreCustom.rotCurrentState == RobotCoreCustom.currentState.UP) {
                 extTargetPosition = 270;
+                diffPos = new double[]{1, -0.1};
                 positionState = PositionState.IDLE;
             }
         }
@@ -347,7 +367,7 @@ public class MainDriveOpmode extends OpMode {
             } else if (positionStateIndex == 1 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 25) {
                 robotCoreCustom.homeMotorRot(RobotCoreCustom.HomingState.DOWN);
                 extTargetPosition = 60;
-                diffPos = new double[]{1, -0.1};
+                diffPos = new double[]{1, -0.05};
                 diffOffset = 0.2;
                 positionStateIndex = 0;
                 positionState = PositionState.IDLE;
@@ -359,7 +379,7 @@ public class MainDriveOpmode extends OpMode {
                 positionStateIndex = 1;
                 gripperState = GripperState.OPEN;
                 wristPos = 0.7;
-                diffPos = new double[]{0, 0};
+                diffPos = new double[]{0, -0.05};
                 diffOffset = 0;
                 setPositionTimer.reset();
         } else if (positionStateIndex == 1 && -robotCoreCustom.motorControllerExt0.motor.getCurrentPosition() < 25) {
