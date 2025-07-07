@@ -81,6 +81,10 @@ public class RobotCoreCustom {
     }
     public void homingUpdate() {
         double voltagePowerMap = 1;   //Math.min(1, 4.0 / controlHubVoltageSensor.getVoltage()); // More sensitive at lower voltage, max 1
+        if (rotCurrentState == currentState.UP && rotHomingState == HomingState.IDLE) {
+            motorControllerRot0.motor.setPower(0.1);
+            motorControllerRot1.motor.setPower(0.1);
+        }
         if (extHomingState == HomingState.DOWN) {
             if (extLimitSW.isPressed()) {
                 // If the current is above a threshold, we assume the limit switch is pressed
@@ -154,12 +158,12 @@ public class RobotCoreCustom {
         if (extHomingState == HomingState.SUCCESS) {
             if (rotCurrentState == currentState.DOWN) {
                 // If the extension is homed and the rotation is down, we can set the position
-                power = Math.max(-1, Math.min(1, pidfControllerExt.calculate(position, -motorControllerExt0.motor.getCurrentPosition(), 0, 10))); // Encoder Reversed and Clamped to prevent slamming
+                power = Math.max(-0.75, Math.min(1, pidfControllerExt.calculate(position, -motorControllerExt0.motor.getCurrentPosition(), 0, 10))); // Encoder Reversed and Clamped to prevent slamming
             } else if (rotCurrentState == currentState.UP && -motorControllerExt0.motor.getCurrentPosition() < 300) {
                 // If the extension is homed and the rotation is up, we can set the position
                 power = Math.max(-0.2, Math.min(1, pidfControllerExt.calculate(position, -motorControllerExt0.motor.getCurrentPosition(), 0, 10))); // Encoder Reversed and Clamped to prevent slamming
             } else {
-                power = Math.max(-1, Math.min(1, pidfControllerExt.calculate(position, -motorControllerExt0.motor.getCurrentPosition(), 0, 10))); // Encoder Reversed and Clamped to prevent slamming
+                power = Math.max(-0.75, Math.min(1, pidfControllerExt.calculate(position, -motorControllerExt0.motor.getCurrentPosition(), 0, 10))); // Encoder Reversed and Clamped to prevent slamming
             }
             motorControllerExt0.motor.setPower(power);
             motorControllerExt1.motor.setPower(power);
@@ -202,26 +206,48 @@ public class RobotCoreCustom {
         servoRight = Math.max(0, Math.min(1, servoRight));
 
         // Set the servo positions
-        servoDiffLeft.setPosition(servoLeft-0.02);
-        servoDiffRight.setPosition(servoRight-0.02);
+        servoDiffLeft.setPosition(servoLeft - 0.02);
+        servoDiffRight.setPosition(servoRight - 0.02);
     }
     public void setDiffPos(double[] pos, double offset) {
         double pitchComponent = pos[0]; // -1 to 1
-        double rotation = pos[1];    // -1 to 1
+        double rotation = pos[1];       // -1 to 1
 
-        double rotationComponent = pitchComponent * (18.0 / 52.0); // 18/52
+        double rotationComponent = pitchComponent * (18.0 / 52.0);
 
-        // Increase pitch range: scale pitch by 1.0 instead of 0.5
-        double servoLeft = 0.5 + (rotationComponent * 0.5) + (rotation * 0.5);
-        double servoRight = 0.5 - (rotationComponent * 0.5) + (rotation * 0.5);
+        // Calculate base positions
+        double targetLeft = 0.5 + (rotationComponent * 0.5) + (rotation * 0.5) + offset;
+        double targetRight = 0.5 - (rotationComponent * 0.5) + (rotation * 0.5) - offset;
 
         // Clamp to [0, 1]
-        servoLeft = Math.max(0, Math.min(1, servoLeft) + offset);
-        servoRight = Math.max(0, Math.min(1, servoRight) - offset);
+        targetLeft = Math.max(0, Math.min(1, targetLeft));
+        targetRight = Math.max(0, Math.min(1, targetRight));
 
-        // Set the servo positions
-        servoDiffLeft.setPosition(servoLeft-0.02);
-        servoDiffRight.setPosition(servoRight-0.02);
+        // Get current positions
+        double currentLeft = servoDiffLeft.getPosition();
+        double currentRight = servoDiffRight.getPosition();
+
+        // Find shortest path with wraparound protection and set to halfway point
+        double halfwayLeft = currentLeft + (shortestServoDeltaWrap(targetLeft, currentLeft) / 2.0);
+        double halfwayRight = currentRight + (shortestServoDeltaWrap(targetRight, currentRight) / 2.0);
+
+        // Clamp again to [0, 1]
+        halfwayLeft = Math.max(0, Math.min(1, halfwayLeft));
+        halfwayRight = Math.max(0, Math.min(1, halfwayRight));
+
+        servoDiffLeft.setPosition(halfwayLeft - 0.02);
+        servoDiffRight.setPosition(halfwayRight - 0.02);
+    }
+
+    // Helper to find shortest delta with wraparound protection for [0,1] range
+    private double shortestServoDeltaWrap(double target, double current) {
+        double delta = target - current;
+        if (delta > 0.5) {
+            delta -= 1.0;
+        } else if (delta < -0.5) {
+            delta += 1.0;
+        }
+        return delta;
     }
 
     /**
